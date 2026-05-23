@@ -5,7 +5,9 @@ import { useMemo, useState } from "react";
 export default function App() {
   const [price, setPrice] = useState(500000);
   const [rent, setRent] = useState(3000);
-  const [expensesPct, setExpensesPct] = useState(35);
+  const [hoa, setHoa] = useState(0);
+  const [vacancyPct, setVacancyPct] = useState(5);
+  const [managementPct, setManagementPct] = useState(0);
   const [rate, setRate] = useState(6.5);
   const [downPct, setDownPct] = useState(20);
   const [taxes, setTaxes] = useState(300);
@@ -14,8 +16,8 @@ export default function App() {
   const [activePopup, setActivePopup] = useState(null);
 
   const displayResult = useMemo(
-    () => calculateDeal({ price, rent, expensesPct, rate, downPct, taxes, insurance, maintenancePct }),
-    [price, rent, expensesPct, rate, downPct, taxes, insurance, maintenancePct]
+    () => calculateDeal({ price, rent, rate, downPct, taxes, insurance, maintenancePct, hoa, vacancyPct, managementPct }),
+    [price, rent, rate, downPct, taxes, insurance, maintenancePct, hoa, vacancyPct, managementPct]
   );
 
   return (
@@ -37,7 +39,9 @@ export default function App() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             <InputCard label="Purchase Price" value={price} onChange={setPrice} />
             <InputCard label="Monthly Rent" value={rent} onChange={setRent} />
-            <InputCard label="Expense Ratio %" value={expensesPct} onChange={setExpensesPct} />
+            <InputCard label="HOA Monthly" value={hoa} onChange={setHoa} />
+            <InputCard label="Vacancy %" value={vacancyPct} onChange={setVacancyPct} />
+            <InputCard label="Management %" value={managementPct} onChange={setManagementPct} />
             <InputCard label="Estimated Financing APR %¹" value={rate} onChange={setRate} />
             <InputCard label="Down Payment %" value={downPct} onChange={setDownPct} />
             <InputCard label="Monthly Taxes" value={taxes} onChange={setTaxes} />
@@ -58,7 +62,7 @@ export default function App() {
             <MetricCard label="Cap Rate⁴" value={`${displayResult.capRate.toFixed(2)}%`} />
             <MetricCard label="Cash on Cash⁵" value={`${displayResult.coc.toFixed(1)}%`} />
             <MetricCard label="DSCR⁶" value={`${displayResult.dscr.toFixed(2)}x`} />
-            <MetricCard label="Expense Ratio⁷" value={`${expensesPct.toFixed(0)}%`} />
+            <MetricCard label="Expense Ratio⁷" value={`${displayResult.expenseRatio.toFixed(0)}%`} />
           </div>
 
           <div className={`mt-8 rounded-2xl border p-5 ${getScoreStyle(displayResult.score)}`}>
@@ -66,7 +70,7 @@ export default function App() {
               Deal Score: {displayResult.score.toFixed(1)} / 10 ({getScoreLabel(displayResult.score)})
             </div>
             <div className="text-sm opacity-90">
-              Based on estimated cap rate, DSCR, operating assumptions, maintenance assumptions, and cash flow strength.
+              Based on estimated cap rate, DSCR, vacancy assumptions, management assumptions, maintenance assumptions, and cash flow strength.
             </div>
           </div>
 
@@ -91,7 +95,7 @@ export default function App() {
             </p>
             <p className="mt-4">
               All calculations, including NOI², cash flow³, cap rate⁴, cash-on-cash return⁵, DSCR⁶,
-              expense ratio⁷, maintenance assumptions⁸, and score outputs are based on user-provided assumptions and simplified estimation models.
+              expense ratio⁷, vacancy assumptions, management assumptions, maintenance assumptions⁸, and score outputs are based on user-provided assumptions and simplified estimation models.
             </p>
           </div>
 
@@ -103,7 +107,7 @@ export default function App() {
             <div><span className="font-semibold text-white">4.</span> Cap Rate measures annual property yield relative to purchase price.</div>
             <div><span className="font-semibold text-white">5.</span> Cash-on-Cash Return measures annual cash flow relative to invested cash.</div>
             <div><span className="font-semibold text-white">6.</span> DSCR (Debt Service Coverage Ratio) measures whether property income can safely cover debt obligations.</div>
-            <div><span className="font-semibold text-white">7.</span> Expense Ratio measures the percentage of rental income consumed by operating expenses.</div>
+            <div><span className="font-semibold text-white">7.</span> Expense Ratio is automatically calculated from taxes, insurance, HOA, maintenance, vacancy assumptions, and management assumptions relative to rental income.</div>
             <div><span className="font-semibold text-white">8.</span> Maintenance % estimates ongoing repair and upkeep costs associated with the property.</div>
           </div>
 
@@ -127,13 +131,15 @@ export default function App() {
   );
 }
 
-function calculateDeal({ price, rent, expensesPct, rate, downPct, taxes, insurance, maintenancePct = 8 }) {
+function calculateDeal({ price, rent, rate, downPct, taxes, insurance, maintenancePct = 8, hoa = 0, vacancyPct = 5, managementPct = 0 }) {
   const annualRent = rent * 12;
   const loanAmount = price * (1 - downPct / 100);
-  const operatingExpenses = annualRent * (expensesPct / 100);
   const maintenanceExpense = annualRent * (maintenancePct / 100);
-  const fixedExpenses = (taxes + insurance) * 12;
-  const totalExpenses = operatingExpenses + fixedExpenses + maintenanceExpense;
+  const vacancyExpense = annualRent * (vacancyPct / 100);
+  const managementExpense = annualRent * (managementPct / 100);
+  const fixedExpenses = (taxes + insurance + hoa) * 12;
+  const totalExpenses = fixedExpenses + maintenanceExpense + vacancyExpense + managementExpense;
+  const expenseRatio = annualRent > 0 ? (totalExpenses / annualRent) * 100 : 0;
   const noi = annualRent - totalExpenses;
   const capRate = price > 0 ? (noi / price) * 100 : 0;
   const monthlyDebt = (loanAmount * (rate / 100)) / 12;
@@ -153,8 +159,8 @@ function calculateDeal({ price, rent, expensesPct, rate, downPct, taxes, insuran
   else if (dscr < 1.2) score += 1;
   else score += 3;
 
-  if (expensesPct >= 45) score += 1;
-  else if (expensesPct >= 35) score += 2;
+  if (expenseRatio >= 45) score += 1;
+  else if (expenseRatio >= 35) score += 2;
   else score += 3;
 
   if (maintenancePct >= 15) score += 0;
@@ -170,6 +176,7 @@ function calculateDeal({ price, rent, expensesPct, rate, downPct, taxes, insuran
     coc,
     monthlyCashFlow,
     maintenanceExpense,
+    expenseRatio,
     score: Math.min(10, score),
   };
 }
@@ -244,16 +251,16 @@ function PopupModal({ type, onClose }) {
 }
 
 function testCalculateDealScenarios() {
-  const strongDeal = calculateDeal({ price: 300000, rent: 3500, expensesPct: 30, rate: 6, downPct: 20, taxes: 200, insurance: 100, maintenancePct: 6 });
-  const weakDeal = calculateDeal({ price: 700000, rent: 2500, expensesPct: 50, rate: 9, downPct: 10, taxes: 500, insurance: 300, maintenancePct: 15 });
-  const lowRateDeal = calculateDeal({ price: 400000, rent: 3200, expensesPct: 35, rate: 5, downPct: 25, taxes: 250, insurance: 120, maintenancePct: 8 });
-  const highRateDeal = calculateDeal({ price: 400000, rent: 3200, expensesPct: 35, rate: 9, downPct: 25, taxes: 250, insurance: 120, maintenancePct: 8 });
+  const strongDeal = calculateDeal({ price: 300000, rent: 3500, rate: 6, downPct: 20, taxes: 200, insurance: 100, maintenancePct: 6, hoa: 0, vacancyPct: 5, managementPct: 0 });
+  const weakDeal = calculateDeal({ price: 700000, rent: 2500, rate: 9, downPct: 10, taxes: 500, insurance: 300, maintenancePct: 15, hoa: 800, vacancyPct: 10, managementPct: 10 });
+  const lowRateDeal = calculateDeal({ price: 400000, rent: 3200, rate: 5, downPct: 25, taxes: 250, insurance: 120, maintenancePct: 8, hoa: 0, vacancyPct: 5, managementPct: 0 });
+  const highRateDeal = calculateDeal({ price: 400000, rent: 3200, rate: 9, downPct: 25, taxes: 250, insurance: 120, maintenancePct: 8, hoa: 0, vacancyPct: 5, managementPct: 0 });
 
   return {
     strongScoreIsHigh: strongDeal.score >= 8,
     weakScoreIsLow: weakDeal.score <= 4,
     higherRateReducesCashFlow: lowRateDeal.monthlyCashFlow > highRateDeal.monthlyCashFlow,
     higherRateReducesDscr: lowRateDeal.dscr > highRateDeal.dscr,
-    maintenanceReducesNoi: calculateDeal({ price: 400000, rent: 3200, expensesPct: 35, rate: 6, downPct: 20, taxes: 250, insurance: 120, maintenancePct: 15 }).noi < calculateDeal({ price: 400000, rent: 3200, expensesPct: 35, rate: 6, downPct: 20, taxes: 250, insurance: 120, maintenancePct: 5 }).noi,
+    maintenanceReducesNoi: calculateDeal({ price: 400000, rent: 3200, rate: 6, downPct: 20, taxes: 250, insurance: 120, maintenancePct: 15, hoa: 0, vacancyPct: 5, managementPct: 0 }).noi < calculateDeal({ price: 400000, rent: 3200, rate: 6, downPct: 20, taxes: 250, insurance: 120, maintenancePct: 5, hoa: 0, vacancyPct: 5, managementPct: 0 }).noi,
   };
 }
