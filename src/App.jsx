@@ -12,6 +12,9 @@ export default function App() {
       <Routes>
         <Route path="/" element={<InvestorV1 />} />
         <Route path="/agents" element={<AgentV2 />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/disclaimer" element={<Disclaimer />} />
       </Routes>
     </BrowserRouter>
   );
