@@ -335,11 +335,21 @@ export default function App() {
 
         <footer className="mt-12 border-t border-slate-800 pt-6 text-center text-xs text-slate-400">
           <div className="flex flex-wrap justify-center gap-4">
-            <button onClick={() => setActiveLegalModal("contact")} className="transition hover:text-white">Contact</button>
-            <button onClick={() => setActiveLegalModal("support")} className="transition hover:text-white">Support</button>
-            <button onClick={() => setActiveLegalModal("terms")} className="transition hover:text-white">Terms</button>
-            <button onClick={() => setActiveLegalModal("privacy")} className="transition hover:text-white">Privacy</button>
-            <button onClick={() => setActiveLegalModal("disclaimer")} className="transition hover:text-white">Disclaimer</button>
+            <button onClick={() => setActiveLegalModal("contact")} className="transition hover:text-white">
+              Contact
+            </button>
+            <button onClick={() => setActiveLegalModal("support")} className="transition hover:text-white">
+              Support
+            </button>
+            <a href="/terms" className="transition hover:text-white">
+              Terms
+            </a>
+            <a href="/privacy" className="transition hover:text-white">
+              Privacy
+            </a>
+            <a href="/disclaimer" className="transition hover:text-white">
+              Disclaimer
+            </a>
           </div>
           <div className="mt-3">© 2026 RentalDealScreener.pro · Operated by Caribmare LLC</div>
         </footer>
@@ -652,7 +662,7 @@ function DecisionBadge({ label, tone }) {
     yellow: "border border-yellow-500/40 bg-yellow-500/10 text-yellow-400",
     red: "border border-red-500/40 bg-red-500/10 text-red-400",
   };
-  return <span className={`rounded-full px-3 py-1 text-xs font-semibold ${styles[tone]}`}>{label}</span>;
+  return <span className={`rounded-full px-3 py-1 text-xs font-semibold ${styles[tone] || styles.red}`}>{label}</span>;
 }
 
 function MetricBox({ value, status, compact = false }) {
@@ -662,7 +672,7 @@ function MetricBox({ value, status, compact = false }) {
     bad: "border border-red-500/30 bg-red-500/10 text-red-400",
   };
   const labels = { good: "Good", avg: "Average", bad: "Poor" };
-  return <div className={`rounded-xl text-center font-semibold ${styles[status]} ${compact ? "px-2 py-2 text-xs" : "px-3 py-2 text-xs"}`}><div>{value}</div><div className="text-[10px] opacity-80">{labels[status]}</div></div>;
+  return <div className={`rounded-xl text-center font-semibold ${styles[status] || styles.bad} ${compact ? "px-2 py-2 text-xs" : "px-3 py-2 text-xs"}`}><div>{value}</div><div className="text-[10px] opacity-80">{labels[status] || "Poor"}</div></div>;
 }
 
 function metricStatus(value, type) {
@@ -839,9 +849,6 @@ function LegalModal({ type, onClose }) {
   const content = {
     contact: { title: "Contact", body: "Rental Deal Screener is operated by Caribmare LLC. For business inquiries or general questions, contact support@RentalDealScreener.pro." },
     support: { title: "Support", body: "Need help, found a bug, or have account questions? Email support@RentalDealScreener.pro and include screenshots or property details when possible." },
-    terms: { title: "Terms of Service", body: "This application is provided for informational and educational purposes only. Users are responsible for independently verifying all assumptions, calculations, financing terms, and investment suitability before making financial decisions." },
-    privacy: { title: "Privacy Policy", body: "Rental Deal Screener may collect limited usage analytics, session activity, browser/device identifiers, and user-provided inputs to improve platform functionality, security, account integrity, and abuse prevention. We do not sell personal information." },
-    disclaimer: { title: "Disclaimer", body: "All calculations, underwriting scores, projections, cash flow estimates, cap rates, DSCR values, and investment assumptions are estimates only and should not be considered financial, legal, tax, lending, or investment advice." },
   };
 
   const selected = content[type];

@@ -111,9 +111,9 @@ export default function App() {
             <div className="flex flex-wrap justify-center gap-4">
               <button onClick={() => setActivePopup("contact")} className="hover:text-white">Contact</button>
               <button onClick={() => setActivePopup("support")} className="hover:text-white">Support</button>
-              <button onClick={() => setActivePopup("terms")} className="hover:text-white">Terms</button>
-              <button onClick={() => setActivePopup("privacy")} className="hover:text-white">Privacy</button>
-              <button onClick={() => setActivePopup("disclaimer")} className="hover:text-white">Disclaimer</button>
+              <a href="/terms" className="hover:text-white">Terms</a>
+              <a href="/privacy" className="hover:text-white">Privacy</a>
+              <a href="/disclaimer" className="hover:text-white">Disclaimer</a>
             </div>
             <div className="mt-3">© 2026 Rental Deal Screener · Operated by Caribmare LLC</div>
           </footer>
@@ -218,18 +218,6 @@ function PopupModal({ type, onClose }) {
     support: {
       title: "Support",
       body: "Technical support is currently provided through email support@rentaldealscreener.pro. Response times may vary during beta testing.",
-    },
-    terms: {
-      title: "Terms of Service",
-      body: "This platform is provided for informational and preliminary screening purposes only. Users are responsible for independently verifying all assumptions, calculations, financials, and investment decisions.",
-    },
-    privacy: {
-      title: "Privacy Policy",
-      body: "This application does not sell personal information. Entered property assumptions may be temporarily processed for analysis functionality.",
-    },
-    disclaimer: {
-      title: "Disclaimer",
-      body: "This tool does not constitute financial, tax, legal, brokerage, appraisal, or investment advice. All outputs are simplified estimates and should not be solely relied upon for investment decisions.",
     },
   };
 
