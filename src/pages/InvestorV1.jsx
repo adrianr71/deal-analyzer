@@ -74,16 +74,30 @@ export default function App() {
             </div>
           </div>
 
-          <div className="mt-8 border-t border-slate-800 pt-6 text-center text-sm text-slate-300">
-            <div className="text-base font-semibold text-blue-300">
-              Need bulk analysis, exports, and advanced workflows?
+          <div className="mt-8 overflow-hidden rounded-3xl border border-blue-500/30 bg-gradient-to-r from-blue-950/60 via-slate-900 to-cyan-950/60 p-6 text-center shadow-2xl shadow-blue-950/30">
+            <div className="inline-flex items-center rounded-full border border-blue-400/30 bg-blue-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-blue-300">
+              Professional Agent Platform
             </div>
-            <div className="mt-2 text-sm text-slate-300">
-              Explore the professional agent platform at
-              <span className="ml-1 font-semibold text-blue-300">rentaldealscreener.pro/agents</span>
+
+            <div className="mt-4 text-2xl font-bold leading-tight text-white md:text-3xl">
+              Need to screen dozens of properties at once?
             </div>
-            <div className="mt-1 text-xs text-slate-400">
-              Built for real estate agents, acquisition teams, and high-volume deal screening.
+
+            <div className="mx-auto mt-4 max-w-3xl text-base leading-7 text-slate-200">
+              The professional agent platform supports <span className="font-semibold text-cyan-300">bulk analysis</span>, <span className="font-semibold text-cyan-300">CSV imports & exports</span>, and <span className="font-semibold text-cyan-300">advanced deal scoring workflows</span> designed for quickly comparing large property lists.
+            </div>
+
+            <div className="mt-6">
+              <a
+                href="/agents"
+                className="inline-flex items-center rounded-2xl border border-blue-400/40 bg-blue-500/20 px-6 py-3 text-sm font-semibold text-blue-100 transition hover:bg-blue-500/30"
+              >
+                Explore Professional Agent Platform →
+              </a>
+            </div>
+
+            <div className="mt-4 text-xs leading-6 text-slate-400">
+              Built for investors and agents who need to quickly analyze and compare large property lists.
             </div>
           </div>
 
