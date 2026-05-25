@@ -309,12 +309,12 @@ export default function App() {
             )}
           </section>
 
-          <div className="flex flex-wrap items-center gap-3 lg:justify-start">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
             <div className="print:hidden">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-4 py-2 text-sm text-cyan-300 transition hover:bg-cyan-500/20"
+                className="h-full rounded-2xl border border-cyan-500/40 bg-cyan-500/10 px-5 py-4 text-sm font-semibold text-cyan-300 transition hover:bg-cyan-500/20"
               >
                 Import CSV File
               </button>
@@ -331,42 +331,57 @@ export default function App() {
             <button
               onClick={startNewSession}
               disabled={!batchAnalyzed}
-              className={`rounded-xl px-4 py-2 text-sm transition ${!batchAnalyzed
+              className={`rounded-2xl px-5 py-4 text-sm font-semibold transition ${!batchAnalyzed
                 ? "cursor-not-allowed border border-slate-800 bg-slate-900 text-slate-600"
                 : "border border-red-500/40 bg-red-500/10 text-red-300 hover:bg-red-500/20"
               }`}
             >
               Start Next Batch
             </button>
+
+            <label
+              onDragOver={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+              }}
+              onDrop={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                const droppedFile = event.dataTransfer.files?.[0];
+                if (!droppedFile) return;
+
+                const syntheticEvent = {
+                  target: {
+                    files: [droppedFile],
+                  },
+                };
+
+                handleImportCSV(syntheticEvent);
+              }}
+              className="flex min-h-[64px] flex-1 cursor-pointer items-center justify-center rounded-2xl border border-dashed border-cyan-500/40 bg-slate-950/50 px-6 py-4 text-center transition hover:border-cyan-400/70 hover:bg-cyan-500/5"
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv,text/csv"
+                className="hidden"
+                onChange={handleImportCSV}
+              />
+
+              <div>
+                <div className="text-sm font-semibold text-cyan-300">
+                  Drag & Drop CSV File Here
+                </div>
+                <div className="mt-1 text-xs text-slate-400">
+                  100 Properties Max
+                </div>
+              </div>
+            </label>
           </div>
         </div>
 
-        <div
-          onDragOver={(event) => {
-            event.preventDefault();
-          }}
-          onDrop={(event) => {
-            event.preventDefault();
-
-            const file = event.dataTransfer.files?.[0];
-            if (!file) return;
-
-            const syntheticEvent = {
-              target: {
-                files: [file],
-              },
-            };
-
-            handleImportCSV(syntheticEvent);
-          }}
-          className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/30 p-2"
-        >
-          <div className="mb-3 text-center text-xs text-slate-500">
-            Drag & drop CSV files here or use the Import CSV button above.
-          </div>
-
-          <AssumptionsPanel assumptions={assumptions} setAssumptions={handleAssumptionsChange} />
-        </div>
+        <AssumptionsPanel assumptions={assumptions} setAssumptions={handleAssumptionsChange} />
 
         <div className="mb-6 flex flex-wrap items-center gap-3 print:hidden">
           <button
