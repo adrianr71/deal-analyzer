@@ -3,16 +3,16 @@ import { useMemo, useState } from "react";
 // Free public investor version
 
 export default function App() {
-  const [price, setPrice] = useState(500000);
-  const [rent, setRent] = useState(3000);
-  const [hoa, setHoa] = useState(0);
-  const [vacancyPct, setVacancyPct] = useState(5);
-  const [managementPct, setManagementPct] = useState(0);
-  const [rate, setRate] = useState(6.5);
-  const [downPct, setDownPct] = useState(20);
-  const [taxes, setTaxes] = useState(300);
-  const [insurance, setInsurance] = useState(150);
-  const [maintenancePct, setMaintenancePct] = useState(8);
+  const [price, setPrice] = useState("");
+  const [rent, setRent] = useState("");
+  const [hoa, setHoa] = useState("");
+  const [vacancyPct, setVacancyPct] = useState("");
+  const [managementPct, setManagementPct] = useState("");
+  const [rate, setRate] = useState("");
+  const [downPct, setDownPct] = useState("");
+  const [taxes, setTaxes] = useState("");
+  const [insurance, setInsurance] = useState("");
+  const [maintenancePct, setMaintenancePct] = useState("");
   const [activePopup, setActivePopup] = useState(null);
 
   const displayResult = useMemo(
@@ -37,16 +37,16 @@ export default function App() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <InputCard label="Purchase Price" value={price} onChange={setPrice} />
-            <InputCard label="Monthly Rent" value={rent} onChange={setRent} />
-            <InputCard label="HOA Monthly" value={hoa} onChange={setHoa} />
-            <InputCard label="Vacancy %" value={vacancyPct} onChange={setVacancyPct} />
-            <InputCard label="Management %" value={managementPct} onChange={setManagementPct} />
-            <InputCard label="Estimated Financing APR %¹" value={rate} onChange={setRate} />
-            <InputCard label="Down Payment %" value={downPct} onChange={setDownPct} />
-            <InputCard label="Monthly Taxes" value={taxes} onChange={setTaxes} />
-            <InputCard label="Monthly Insurance" value={insurance} onChange={setInsurance} />
-            <InputCard label="Maintenance %⁸" value={maintenancePct} onChange={setMaintenancePct} />
+            <InputCard label="Purchase Price" value={price} placeholder="500000" onChange={setPrice} />
+            <InputCard label="Monthly Rent" value={rent} placeholder="3000" onChange={setRent} />
+            <InputCard label="HOA Monthly" value={hoa} placeholder="0" onChange={setHoa} />
+            <InputCard label="Vacancy Per Year %" value={vacancyPct} placeholder="5" onChange={setVacancyPct} />
+            <InputCard label="Management Fee %" value={managementPct} placeholder="0" onChange={setManagementPct} />
+            <InputCard label="Estimated Financing APR %¹" value={rate} placeholder="6.5" onChange={setRate} />
+            <InputCard label="Down Payment %" value={downPct} placeholder="20" onChange={setDownPct} />
+            <InputCard label="Monthly Taxes" value={taxes} placeholder="300" onChange={setTaxes} />
+            <InputCard label="Monthly Insurance" value={insurance} placeholder="150" onChange={setInsurance} />
+            <InputCard label="Maintenance Cost %²" value={maintenancePct} placeholder="8" onChange={setMaintenancePct} />
           </div>
         </section>
 
@@ -57,12 +57,12 @@ export default function App() {
           </div>
 
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
-            <MetricCard label="NOI²" value={`$${Math.round(displayResult.noi).toLocaleString()}`} />
-            <MetricCard label="Cash Flow³" value={`$${Math.round(displayResult.monthlyCashFlow).toLocaleString()}`} />
-            <MetricCard label="Cap Rate⁴" value={`${displayResult.capRate.toFixed(2)}%`} />
-            <MetricCard label="Cash on Cash⁵" value={`${displayResult.coc.toFixed(1)}%`} />
-            <MetricCard label="DSCR⁶" value={`${displayResult.dscr.toFixed(2)}x`} />
-            <MetricCard label="Expense Ratio⁷" value={`${displayResult.expenseRatio.toFixed(0)}%`} />
+            <MetricCard label="NOI³" value={`$${Math.round(displayResult.noi).toLocaleString()}`} />
+            <MetricCard label="Cash Flow⁴" value={`$${Math.round(displayResult.monthlyCashFlow).toLocaleString()}`} />
+            <MetricCard label="Cap Rate⁵" value={`${displayResult.capRate.toFixed(2)}%`} />
+            <MetricCard label="Cash on Cash⁶" value={`${displayResult.coc.toFixed(1)}%`} />
+            <MetricCard label="DSCR⁷" value={`${displayResult.dscr.toFixed(2)}x`} />
+            <MetricCard label="Expense Ratio⁸" value={`${displayResult.expenseRatio.toFixed(0)}%`} />
           </div>
 
           <div className={`mt-8 rounded-2xl border p-5 ${getScoreStyle(displayResult.score)}`}>
@@ -108,21 +108,21 @@ export default function App() {
               It does not constitute financial, legal, tax, lending, appraisal, brokerage, or investment advice.
             </p>
             <p className="mt-4">
-              All calculations, including NOI², cash flow³, cap rate⁴, cash-on-cash return⁵, DSCR⁶,
-              expense ratio⁷, vacancy assumptions, management assumptions, maintenance assumptions⁸, and score outputs are based on user-provided assumptions and simplified estimation models.
+              All calculations, including maintenance assumptions², NOI³, cash flow⁴, cap rate⁵, cash-on-cash return⁶, DSCR⁷, expense ratio⁸, vacancy assumptions, and management assumptions, and score outputs are based on user-provided assumptions and simplified estimation models.
             </p>
           </div>
 
           <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/30 p-5 text-sm leading-7 text-slate-300">
             <div className="mb-3 text-base font-semibold text-slate-100">Footnotes</div>
-            <div><span className="font-semibold text-white">1.</span> Estimated Financing APR represents estimated borrowing cost assumptions.</div>
-            <div><span className="font-semibold text-white">2.</span> NOI (Net Operating Income) represents income remaining after operating expenses but before mortgage payments.</div>
-            <div><span className="font-semibold text-white">3.</span> Cash Flow represents estimated monthly cash remaining after expenses and financing costs.</div>
-            <div><span className="font-semibold text-white">4.</span> Cap Rate measures annual property yield relative to purchase price.</div>
-            <div><span className="font-semibold text-white">5.</span> Cash-on-Cash Return measures annual cash flow relative to invested cash.</div>
-            <div><span className="font-semibold text-white">6.</span> DSCR (Debt Service Coverage Ratio) measures whether property income can safely cover debt obligations.</div>
-            <div><span className="font-semibold text-white">7.</span> Expense Ratio is automatically calculated from taxes, insurance, HOA, maintenance, vacancy assumptions, and management assumptions relative to rental income.</div>
-            <div><span className="font-semibold text-white">8.</span> Maintenance % estimates ongoing repair and upkeep costs associated with the property.</div>
+            <div><span className="text-[15px] font-semibold text-white">1.</span> Estimated Financing APR represents estimated borrowing cost assumptions.</div>
+            <div><span className="text-[15px] font-semibold text-white">2.</span> Maintenance Cost % estimates ongoing repair and upkeep costs associated with the property.</div>
+            <div><span className="text-[15px] font-semibold text-white">3.</span> NOI (Net Operating Income) represents income remaining after operating expenses but before mortgage payments.</div>
+            <div><span className="text-[15px] font-semibold text-white">4.</span> Cash Flow represents estimated monthly cash remaining after expenses and financing costs.</div>
+            <div><span className="text-[15px] font-semibold text-white">5.</span> Cap Rate measures annual property yield relative to purchase price.</div>
+            <div><span className="text-[15px] font-semibold text-white">6.</span> Cash-on-Cash Return measures annual cash flow relative to invested cash.</div>
+            <div><span className="text-[15px] font-semibold text-white">7.</span> DSCR (Debt Service Coverage Ratio) measures whether property income can safely cover debt obligations.</div>
+            <div><span className="text-[15px] font-semibold text-white">8.</span> Expense Ratio is automatically calculated from taxes, insurance, HOA, maintenance, vacancy assumptions, and management assumptions relative to rental income.</div>
+            
           </div>
 
           <footer className="mt-8 border-t border-slate-800 pt-6 text-center text-xs text-slate-400">
@@ -195,14 +195,18 @@ function calculateDeal({ price, rent, rate, downPct, taxes, insurance, maintenan
   };
 }
 
-function InputCard({ label, value, onChange }) {
+function InputCard({ label, value, placeholder = "", onChange }) {
   return (
     <div>
-      <div className="mb-2 text-xs uppercase tracking-wide text-slate-400">{label}</div>
+      <div className="mb-2 text-sm uppercase tracking-wide text-slate-400">{label}</div>
       <input
         type="number"
         value={value}
-        onChange={(event) => onChange(Number(event.target.value))}
+        placeholder={placeholder}
+        onChange={(event) => {
+          const nextValue = event.target.value;
+          onChange(nextValue === "" ? "" : Number(nextValue));
+        }}
         className="w-full rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none transition focus:border-blue-500"
       />
     </div>
@@ -212,7 +216,7 @@ function InputCard({ label, value, onChange }) {
 function MetricCard({ label, value }) {
   return (
     <div className="rounded-2xl border border-slate-700 bg-slate-800 p-4 text-center shadow-lg">
-      <div className="mb-2 text-xs uppercase tracking-wide text-slate-400">{label}</div>
+      <div className="mb-2 text-sm uppercase tracking-wide text-slate-400">{label}</div>
       <div className="text-xl font-bold text-white">{value}</div>
     </div>
   );

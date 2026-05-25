@@ -214,21 +214,75 @@ export default function App() {
               Bulk screen rental deals in seconds. Save hours of spreadsheet work and focus on properties worth deeper analysis.
             </p>
 
-            <div className="mt-3 flex flex-col gap-2 text-sm">
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-blue-200">
-                  Professional Agent Access • $49/month • Individual Professional Plan
+            <div className="mt-5 overflow-hidden rounded-3xl border border-blue-500/40 bg-gradient-to-r from-blue-950/80 via-slate-900 to-cyan-950/70 p-6 shadow-2xl shadow-blue-950/30">
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <div className="inline-flex items-center rounded-full border border-blue-400/30 bg-blue-500/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-blue-300">
+                    Professional Agent Platform
+                  </div>
+
+                  <div className="mt-4 flex items-end gap-2">
+                    <div className="text-5xl font-black tracking-tight text-white md:text-6xl">
+                      $49
+                    </div>
+                    <div className="pb-2 text-lg font-medium text-slate-300">
+                      /month
+                    </div>
+                  </div>
+
+                  <div className="mt-3 max-w-2xl text-sm leading-7 text-slate-300 md:text-base">
+                    Bulk analyze up to 100 rental properties at once with professional deal scoring, CSV imports & exports, cash flow analysis, NOI calculations, and advanced investor workflows.
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-400">
+                    <div className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
+                      Individual Professional Plan
+                    </div>
+                    <div className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
+                      Cancel Anytime
+                    </div>
+                    <div className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
+                      Access Across Personal Devices
+                    </div>
+                  </div>
                 </div>
-                <div className="text-xs text-slate-400">
-                  Cancel anytime. Access remains active through the current billing period across your personal devices.
+
+                <div className="min-w-[260px] rounded-2xl border border-cyan-400/30 bg-cyan-500/10 p-5 text-center">
+                  {!isPaid ? (
+                    <>
+                      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
+                        Free Trial Included
+                      </div>
+
+                      <div className="mt-3 text-3xl font-bold text-white">
+                        {remainingTrials} Free
+                      </div>
+
+                      <div className="mt-1 text-sm text-slate-300">
+                        Batch Analyses Remaining
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-green-300">
+                        Professional Access Active
+                      </div>
+
+                      <div className="mt-3 text-3xl font-bold text-white">
+                        Unlimited
+                      </div>
+
+                      <div className="mt-1 text-sm text-slate-300">
+                        Monthly Batch Access
+                      </div>
+
+                      <div className="mt-4 text-xs leading-6 text-slate-400">
+                        Your professional subscription is currently active.
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
-
-              {!isPaid && (
-                <div className="w-fit rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-xs text-blue-200">
-                  Free Trial Includes 3 Batch Analyses
-                </div>
-              )}
             </div>
           </header>
 
@@ -692,16 +746,27 @@ function AssumptionsPanel({ assumptions, setAssumptions }) {
         <AssumptionInput label="Down Payment %" value={assumptions.downPaymentPct} onChange={(v) => update("downPaymentPct", v)} />
         <label className="block">
           <div className="mb-2 flex items-start text-xs uppercase tracking-wide text-slate-400"><span>Estimated Financing APR %</span><span className="relative -top-0.5 ml-1 text-[11px] font-bold leading-none text-slate-200">1</span></div>
-          <input type="number" inputMode="decimal" enterKeyHint="done" value={assumptions.interestRate} onChange={(e) => update("interestRate", Number(e.target.value))} className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-3 text-white" />
+          <input
+            type="number"
+            inputMode="decimal"
+            enterKeyHint="done"
+            value={assumptions.interestRate === 0 ? "" : assumptions.interestRate}
+            placeholder="6.75"
+            onChange={(e) => {
+              const nextValue = e.target.value;
+              update("interestRate", nextValue === "" ? 0 : Number(nextValue));
+            }}
+            className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-3 text-white placeholder:text-slate-500"
+          />
         </label>
         <AssumptionInput label="Property Tax %" value={assumptions.taxRatePct} onChange={(v) => update("taxRatePct", v)} />
         <AssumptionInput label="Insurance" value={assumptions.monthlyInsurance} onChange={(v) => update("monthlyInsurance", v)} />
         <AssumptionInput label="Closing Costs %" value={assumptions.closingCostsPct} onChange={(v) => update("closingCostsPct", v)} />
         <AssumptionInput label="Rehab Budget" value={assumptions.rehabBudget} onChange={(v) => update("rehabBudget", v)} />
         <AssumptionInput label="HOA Monthly" value={assumptions.hoaMonthly} onChange={(v) => update("hoaMonthly", v)} />
-        <AssumptionInput label="Maintenance %" value={assumptions.maintenancePct} onChange={(v) => update("maintenancePct", v)} />
-        <AssumptionInput label="Vacancy %" value={assumptions.vacancyPct} onChange={(v) => update("vacancyPct", v)} />
-        <AssumptionInput label="Management %" value={assumptions.managementPct} onChange={(v) => update("managementPct", v)} />
+        <AssumptionInput label="Maintenance Cost %" value={assumptions.maintenancePct} onChange={(v) => update("maintenancePct", v)} />
+        <AssumptionInput label="Vacancy Per Year %" value={assumptions.vacancyPct} onChange={(v) => update("vacancyPct", v)} />
+        <AssumptionInput label="Management Fee %" value={assumptions.managementPct} onChange={(v) => update("managementPct", v)} />
         <AssumptionInput label="Single Family Rent" value={assumptions.singleRent} onChange={(v) => update("singleRent", v)} />
         <AssumptionInput label="Duplex Rent (Per Unit)" value={assumptions.duplexRent} onChange={(v) => update("duplexRent", v)} />
         <AssumptionInput label="Triplex Rent (Per Unit)" value={assumptions.triplexRent} onChange={(v) => update("triplexRent", v)} />
@@ -712,7 +777,39 @@ function AssumptionsPanel({ assumptions, setAssumptions }) {
 }
 
 function AssumptionInput({ label, value, onChange }) {
-  return <label><div className="mb-2 text-xs uppercase tracking-wide text-slate-400">{label}</div><input type="number" inputMode="decimal" enterKeyHint="done" value={value} onChange={(e) => onChange(Number(e.target.value))} className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-3" /></label>;
+  const placeholderMap = {
+    "Down Payment %": "20",
+    "Property Tax %": "1.2",
+    "Insurance": "250",
+    "Closing Costs %": "3",
+    "Rehab Budget": "15000",
+    "HOA Monthly": "0",
+    "Maintenance Cost %": "8",
+    "Vacancy Per Year %": "5",
+    "Management Fee %": "0",
+    "Single Family Rent": "2200",
+    "Duplex Rent (Per Unit)": "2000",
+    "Triplex Rent (Per Unit)": "1800",
+    "Quad Rent (Per Unit)": "1700",
+  };
+
+  return (
+    <label>
+      <div className="mb-2 text-xs uppercase tracking-wide text-slate-400">{label}</div>
+      <input
+        type="number"
+        inputMode="decimal"
+        enterKeyHint="done"
+        value={value === 0 ? "" : value}
+        placeholder={placeholderMap[label] || ""}
+        onChange={(e) => {
+          const nextValue = e.target.value;
+          onChange(nextValue === "" ? 0 : Number(nextValue));
+        }}
+        className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-3 placeholder:text-slate-500"
+      />
+    </label>
+  );
 }
 
 function MathLogicNote({ onDeveloperUnlock }) {
