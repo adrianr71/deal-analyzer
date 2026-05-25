@@ -34,7 +34,7 @@ const MLS_FIELD_MAP = {
   city: ["city", "city name", "municipality"],
   state: ["state", "province"],
   zip: ["zip", "zip code", "postal code", "zipcode"],
-  type: ["property type", "type", "propertytype"],
+  type: ["property type", "type", "propertytype", "type of property", "property subtype", "style"],
   mls: ["mls", "mls number", "mls #", "listing id", "listingid"],
   rent: ["rent", "monthly rent", "gross rent", "estimated rent"],
 };
@@ -191,7 +191,10 @@ export default function App() {
         .filter((row) => row.address || row.price || row.mls);
 
       const limitedRows = parsedRows.slice(0, AGENT_BATCH_LIMIT);
+
       setRows(limitedRows);
+
+      alert(`${limitedRows.length} properties imported successfully. Next: Fill out Global Assumptions, then press Analyze Batch.`);
       setAnalyzedRows([]);
       setBatchAnalyzed(false);
       setIsProcessing(false);
@@ -383,6 +386,10 @@ export default function App() {
 
         <AssumptionsPanel assumptions={assumptions} setAssumptions={handleAssumptionsChange} />
 
+        <div className="mb-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3 text-sm text-blue-200 print:hidden">
+          <strong>Next Step:</strong> Fill out Global Assumptions as needed, then press <strong>Analyze Batch</strong> to process your imported properties.
+        </div>
+
         <div className="mb-6 flex flex-wrap items-center gap-3 print:hidden">
           <button
             onClick={runFreeTrialBatch}
@@ -398,7 +405,7 @@ export default function App() {
                 ? "Batch Already Analyzed"
                 : isPaid
                   ? "Analyze Batch"
-                  : `Analyze Batch • ${remainingTrials} Free Batches Remaining`}
+                  : `Click Here to Analyze Batch • ${remainingTrials} Free Batches Remaining`}
           </button>
 
           <div className="text-sm font-medium text-slate-300">Sort Results By:</div>
