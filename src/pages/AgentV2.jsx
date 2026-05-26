@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import Papa from "papaparse";
 
 const DEFAULT_ASSUMPTIONS = {
   closingCostsPct: 3,
@@ -154,6 +155,7 @@ export default function App() {
 
   function handleImportCSV(event) {
     console.log("CSV import triggered");
+
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -162,50 +164,50 @@ export default function App() {
       return;
     }
 
-    const reader = new FileReader();
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (header) => header.trim(),
 
-    reader.onload = (loadEvent) => {
-      const text = String(loadEvent.target?.result || "");
-      const lines = text
-        .replace(/\r\n/g, "\n")
-        .replace(/\r/g, "\n")
-        .split("\n")
-        .filter((line) => line.trim() !== "");
+      complete: (results) => {
+        const parsedRows = results.data
+          .map((row) => mapMlsRow(row))
+          .filter((row) => row.address || row.price || row.mls);
 
-      if (lines.length < 2) {
-        alert("No property rows found in the CSV.");
-        return;
-      }
+        if (parsedRows.length === 0) {
+          alert("No valid property rows were found in the CSV.");
+          return;
+        }
 
-      const headers = splitCsvLine(lines[0]).map((header) => stripOuterQuotes(header).trim());
-      const parsedRows = lines
-        .slice(1)
-        .map((line) => {
-          const values = splitCsvLine(line).map((value) => stripOuterQuotes(value).trim());
-          const rawRow = {};
-          headers.forEach((header, index) => {
-            rawRow[header] = values[index] || "";
-          });
-          return mapMlsRow(rawRow);
-        })
-        .filter((row) => row.address || row.price || row.mls);
+        const limitedRows = parsedRows.slice(0, AGENT_BATCH_LIMIT);
 
-      const limitedRows = parsedRows.slice(0, AGENT_BATCH_LIMIT);
+        setRows(limitedRows);
 
-      setRows(limitedRows);
+        alert(
+          `${limitedRows.length} properties imported successfully. Next: Fill out Global Assumptions, then press Analyze Batch.`
+        );
 
-      alert(`${limitedRows.length} properties imported successfully. Next: Fill out Global Assumptions, then press Analyze Batch.`);
-      setAnalyzedRows([]);
-      setBatchAnalyzed(false);
-      setIsProcessing(false);
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify(limitedRows));
+        setAnalyzedRows([]);
+        setBatchAnalyzed(false);
+        setIsProcessing(false);
 
-      if (parsedRows.length > AGENT_BATCH_LIMIT) {
-        alert(`Only the first ${AGENT_BATCH_LIMIT} properties were imported for this batch.`);
-      }
-    };
+        sessionStorage.setItem(
+          SESSION_KEY,
+          JSON.stringify(limitedRows)
+        );
 
-    reader.readAsText(file);
+        if (parsedRows.length > AGENT_BATCH_LIMIT) {
+          alert(
+            `Only the first ${AGENT_BATCH_LIMIT} properties were imported for this batch.`
+          );
+        }
+      },
+
+      error: (error) => {
+        console.error("CSV parsing error:", error);
+        alert("There was a problem reading the CSV file.");
+      },
+    });
   }
 
   return (
@@ -838,22 +840,6 @@ function AssumptionsPanel({ assumptions, setAssumptions }) {
 }
 
 function AssumptionInput({ label, value, onChange }) {
-  const placeholderMap = {
-    "Down Payment %": "20",
-    "Property Tax %": "1.2",
-    "Insurance": "250",
-    "Closing Costs %": "3",
-    "Rehab Budget": "15000",
-    "HOA Monthly": "0",
-    "Maintenance Cost %": "8",
-    "Vacancy Per Year %": "5",
-    "Management Fee %": "0",
-    "Single Family Rent": "2200",
-    "Duplex Rent (Per Unit)": "2000",
-    "Triplex Rent (Per Unit)": "1800",
-    "Quad Rent (Per Unit)": "1700",
-  };
-
   return (
     <label>
       <div className="mb-2 text-xs uppercase tracking-wide text-slate-400">{label}</div>
@@ -861,8 +847,8 @@ function AssumptionInput({ label, value, onChange }) {
         type="number"
         inputMode="decimal"
         enterKeyHint="done"
-        value={value === 0 ? "" : value}
-        placeholder={placeholderMap[label] || ""}
+        value={value}
+        placeholder=""
         onChange={(e) => {
           const nextValue = e.target.value;
           onChange(nextValue === "" ? 0 : Number(nextValue));
@@ -944,32 +930,7 @@ function logCalculateEvent(rows) {
 }
 
 function splitCsvLine(line) {
-  const result = [];
-  let current = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < line.length; i += 1) {
-    const char = line[i];
-    const nextChar = line[i + 1];
-    if (char === '"' && inQuotes && nextChar === '"') {
-      current += '"';
-      i += 1;
-      continue;
-    }
-    if (char === '"') {
-      inQuotes = !inQuotes;
-      continue;
-    }
-    if (char === "," && !inQuotes) {
-      result.push(current);
-      current = "";
-    } else {
-      current += char;
-    }
-  }
-
-  result.push(current);
-  return result;
+  return [line];
 }
 
 function stripOuterQuotes(value) {
@@ -1036,7 +997,7 @@ function runSmokeTests() {
   console.assert(normalizeHeader("List Price") === "listprice", "header normalization should work");
   console.assert(findMappedField(["List Price"], MLS_FIELD_MAP.price) === "List Price", "price mapping should work");
   console.assert(mapMlsRow({ "List Price": 500000, "Street Address": "123 Main St" }).price === 500000, "MLS row mapping should work");
-  console.assert(splitCsvLine('"123 Main St, Unit A",Miami,FL').length === 3, "CSV parser should support quoted commas");
+  console.assert(typeof Papa.parse === "function", "PapaParse should be available");
   console.assert(analyzeRows([{ price: 300000, type: "duplex", address: "A" }], DEFAULT_ASSUMPTIONS).length === 1, "analysis should return one row");
   console.assert(sortRows([{ score: 1 }, { score: 2 }], "score")[0].score === 2, "score sort should work");
   console.assert(typeof PAID_ACCESS_VALUE === "number", "paid access sentinel should be numeric");
