@@ -217,7 +217,7 @@ export default function App() {
           <header>
             <h1 className="text-3xl font-bold">Rental Deal Screener for Real Estate Agents</h1>
             <p className="mt-1 text-sm text-slate-400">
-              Bulk screen rental deals in seconds. Save hours of spreadsheet work and focus on properties worth deeper analysis.
+              Bulk screen rental deals in seconds using professional investment metrics commonly reviewed by real estate investors, DSCR lenders, mortgage professionals, and acquisition teams.
             </p>
 
             <div className="mt-5 overflow-hidden rounded-3xl border border-blue-500/40 bg-gradient-to-r from-blue-950/80 via-slate-900 to-cyan-950/70 p-6 shadow-2xl shadow-blue-950/30">
@@ -237,7 +237,7 @@ export default function App() {
                   </div>
 
                   <div className="mt-3 max-w-2xl text-sm leading-7 text-slate-300 md:text-base">
-                    Bulk analyze up to 100 rental properties at once with professional deal scoring, CSV imports & exports, cash flow analysis, NOI calculations, and advanced investor workflows.
+                    Bulk analyze up to 100 rental properties at once with professional deal scoring, CSV imports & exports, DSCR loan analysis, cash flow analysis, NOI calculations, cap rate screening, and advanced real estate agent workflows.
                   </div>
 
                   <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-400">
@@ -863,7 +863,7 @@ function MathLogicNote({ onDeveloperUnlock }) {
   return (
     <div className="mt-6 space-y-6">
       <div className="rounded-2xl border border-slate-700 bg-slate-950/70 p-4 text-sm">
-        <div className="font-semibold text-white">Math Logic Used</div>
+        <div className="font-semibold text-white">Professional Investment & Lending Metrics Used</div>
         <div className="mt-2 text-slate-300">Gross Rent → Operating Expenses + HOA → NOI → Debt Service → Monthly Cash Flow → Cap Rate / CoC / DSCR</div>
         <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-6">
           <GlossaryCard title="NOI" good="Positive NOI = Good" bad="Negative NOI = Poor" formula="NOI = Gross Rent − Operating Expenses" />
@@ -878,7 +878,7 @@ function MathLogicNote({ onDeveloperUnlock }) {
       <div className="rounded-2xl border border-slate-700 bg-slate-950/70 p-5 text-sm text-slate-300">
         <div className="mb-4 text-base font-semibold text-white">Disclaimer & Footnotes</div>
         <div className="space-y-4 leading-7">
-          <p>This tool is intended for preliminary investment screening, educational analysis, and informational purposes only.</p>
+          <p>This tool is intended for preliminary investment screening, educational analysis, rental property underwriting review, and informational purposes only.</p>
           <p>Professional Agent Access is intended for individual professional use. Future additional seat and brokerage access options may become available separately.</p>
           <p>All calculations, deal scoring models, rent assumptions, cap rates, DSCR values, cash-on-cash returns, NOI calculations, expense ratios, and cash flow projections are estimates based on user inputs and assumptions that may differ from actual market conditions.</p>
           <p>This application does not constitute financial, legal, tax, lending, brokerage, appraisal, accounting, or investment advice. Users should independently verify rents, expenses, financing assumptions, insurance costs, taxes, repair budgets, vacancy assumptions, HOA fees, and investment suitability with qualified professionals before making financial or real estate decisions.</p>
@@ -890,7 +890,7 @@ function MathLogicNote({ onDeveloperUnlock }) {
             <p><strong>3.</strong> <strong>Monthly Cash Flow</strong> represents the estimated money remaining each month after operating expenses and mortgage payments.</p>
             <p><strong>4.</strong> <strong>Cap Rate</strong> measures property yield by dividing annual NOI by purchase price.</p>
             <p><strong>5.</strong> <strong>COC (Cash-on-Cash Return)</strong> measures annual cash flow relative to total invested <button type="button" onClick={onDeveloperUnlock} className="cursor-text text-slate-400 underline-offset-2 hover:text-slate-300 focus:outline-none">cash</button>.</p>
-            <p><strong>6.</strong> <strong>DSCR (Debt Service Coverage Ratio)</strong> measures whether the property income can safely cover mortgage payments.</p>
+            <p><strong>6.</strong> <strong>DSCR (Debt Service Coverage Ratio)</strong> measures whether the property's rental income can safely cover mortgage payments. DSCR is commonly reviewed by DSCR lenders, mortgage professionals, banks, and investment property loan programs during underwriting.</p>
             <p><strong>7.</strong> <strong>Expense Ratio</strong> measures how much rental income is consumed by operating expenses before mortgage payments.</p>
           </div>
         </div>
