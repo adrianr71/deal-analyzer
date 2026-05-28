@@ -30,14 +30,28 @@ const TRIAL_KEY = "agent_trial_count";
 const PAID_ACCESS_VALUE = 999;
 
 const MLS_FIELD_MAP = {
-  price: ["price", "list price", "asking price", "current price", "lp", "listprice"],
-  address: ["address", "street address", "property address", "street"],
-  city: ["city", "city name", "municipality"],
-  state: ["state", "province"],
-  zip: ["zip", "zip code", "postal code", "zipcode"],
-  type: ["property type", "type", "propertytype", "type of property", "property subtype", "style"],
-  mls: ["mls", "mls number", "mls #", "listing id", "listingid"],
-  rent: ["rent", "monthly rent", "gross rent", "estimated rent"],
+  // Minimum RESO-style field mapping needed for rental deal screening metrics.
+  // These aliases help the app read MLS/Excel/CSV exports from different systems.
+  listingId: ["listingid", "listing id", "mls", "mls #", "mls number", "ml#", "mls id", "l_num", "lnum"],
+  status: ["standardstatus", "status", "st", "listing status", "mls status", "link st"],
+  address: ["unparsedaddress", "address", "street address", "property address", "full address", "addr", "street", "str"],
+  city: ["city", "city name", "locality", "town", "twn", "municipality", "muni"],
+  state: ["state", "stateorprovince", "province"],
+  zip: ["postalcode", "zip", "zip code", "zipcode", "postal code"],
+  subdivision: ["subdivisionname", "subdivision", "subdivisio", "sub", "legal sub"],
+  listPrice: ["listprice", "list price", "price", "asking price", "current price", "origprice", "original price", "lprice", "lp"],
+  closePrice: ["closeprice", "sale price", "sold price", "soldprice", "sprice", "sp", "close price"],
+  daysOnMarket: ["cumulativedaysonmarket", "cdom", "dom", "adom", "days on market"],
+  bedrooms: ["bedroomstotal", "beds", "bed", "br", "bedrooms", "#beds"],
+  fullBaths: ["bathroomsfull", "full bath", "full baths", "f_bath", "fb", "bathf", "#fbaths"],
+  halfBaths: ["bathroomshalf", "half bath", "half baths", "h_bath", "hb", "bathh", "#hbaths"],
+  propertySubType: ["propertysubtype", "type of property", "property type", "proptype", "prop type", "propclass", "subtype", "property subtype", "style", "type"],
+  yearBuilt: ["yearbuilt", "year built", "yrblt", "built", "year", "yb"],
+  livingArea: ["livingarea", "sqft la", "sqft", "sqft living", "sqft_la", "sf_la", "living area"],
+  lotSizeSquareFeet: ["lotsizesquarefeet", "lot sqft", "lotsize", "lot size", "lot_sf", "lot acres", "lsf"],
+  garageSpaces: ["garagespaces", "garage spaces", "#garage s", "gar", "garage", "pkg spaces", "garspc"],
+  poolPrivateYN: ["poolprivateyn", "pool yn", "pool", "pool private", "has pool", "pl"],
+  rent: ["rent", "monthly rent", "gross rent", "estimated rent", "market rent", "rent estimate", "estimated monthly rent"],
 };
 
 export default function App() {
@@ -167,7 +181,11 @@ export default function App() {
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
-      transformHeader: (header) => header.trim(),
+      transformHeader: (header) =>
+        String(header)
+          .replace(/^\uFEFF/, "")
+          .trim()
+          .toLowerCase(),
 
       complete: (results) => {
         const parsedRows = results.data
@@ -709,7 +727,11 @@ function BodyCell({ children, align = "center", strong = false, compact = false,
 }
 
 function normalizeHeader(header) {
-  return String(header || "").toLowerCase().replace(/[^a-z0-9]/g, "").trim();
+  return String(header || "")
+    .replace(/^\uFEFF/, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
 }
 
 function findMappedField(headers, aliases) {
@@ -729,14 +751,25 @@ function findMappedField(headers, aliases) {
 function mapMlsRow(row) {
   const headers = Object.keys(row || {});
   const mapped = {
-    price: findMappedField(headers, MLS_FIELD_MAP.price),
+    price: findMappedField(headers, MLS_FIELD_MAP.listPrice),
     address: findMappedField(headers, MLS_FIELD_MAP.address),
     city: findMappedField(headers, MLS_FIELD_MAP.city),
     state: findMappedField(headers, MLS_FIELD_MAP.state),
     zip: findMappedField(headers, MLS_FIELD_MAP.zip),
-    type: findMappedField(headers, MLS_FIELD_MAP.type),
-    mls: findMappedField(headers, MLS_FIELD_MAP.mls),
+    type: findMappedField(headers, MLS_FIELD_MAP.propertySubType),
+    mls: findMappedField(headers, MLS_FIELD_MAP.listingId),
     rent: findMappedField(headers, MLS_FIELD_MAP.rent),
+    status: findMappedField(headers, MLS_FIELD_MAP.status),
+    subdivision: findMappedField(headers, MLS_FIELD_MAP.subdivision),
+    daysOnMarket: findMappedField(headers, MLS_FIELD_MAP.daysOnMarket),
+    bedrooms: findMappedField(headers, MLS_FIELD_MAP.bedrooms),
+    fullBaths: findMappedField(headers, MLS_FIELD_MAP.fullBaths),
+    halfBaths: findMappedField(headers, MLS_FIELD_MAP.halfBaths),
+    yearBuilt: findMappedField(headers, MLS_FIELD_MAP.yearBuilt),
+    livingArea: findMappedField(headers, MLS_FIELD_MAP.livingArea),
+    lotSizeSquareFeet: findMappedField(headers, MLS_FIELD_MAP.lotSizeSquareFeet),
+    garageSpaces: findMappedField(headers, MLS_FIELD_MAP.garageSpaces),
+    poolPrivateYN: findMappedField(headers, MLS_FIELD_MAP.poolPrivateYN),
   };
 
   return {
@@ -748,6 +781,17 @@ function mapMlsRow(row) {
     type: row[mapped.type] || "",
     mls: row[mapped.mls] || "",
     rentManual: row[mapped.rent] ? parseNumber(row[mapped.rent]) : null,
+    status: row[mapped.status] || "",
+    subdivision: row[mapped.subdivision] || "",
+    daysOnMarket: parseNumber(row[mapped.daysOnMarket]),
+    bedrooms: parseNumber(row[mapped.bedrooms]),
+    fullBaths: parseNumber(row[mapped.fullBaths]),
+    halfBaths: parseNumber(row[mapped.halfBaths]),
+    yearBuilt: parseNumber(row[mapped.yearBuilt]),
+    livingArea: parseNumber(row[mapped.livingArea]),
+    lotSizeSquareFeet: parseNumber(row[mapped.lotSizeSquareFeet]),
+    garageSpaces: parseNumber(row[mapped.garageSpaces]),
+    poolPrivateYN: parseBoolean(row[mapped.poolPrivateYN]),
   };
 }
 
@@ -942,6 +986,13 @@ function parseNumber(value) {
   return Number(cleaned) || 0;
 }
 
+function parseBoolean(value) {
+  const text = String(value || "").trim().toLowerCase();
+  if (["yes", "y", "true", "1"].includes(text)) return true;
+  if (["no", "n", "false", "0"].includes(text)) return false;
+  return "";
+}
+
 function formatCurrency(value) {
   const rounded = Math.round(Number(value) || 0);
   const absolute = Math.abs(rounded).toLocaleString();
@@ -995,7 +1046,15 @@ function runSmokeTests() {
   console.assert(AGENT_BATCH_LIMIT === 100, "batch limit should remain 100");
   console.assert(TRIAL_KEY === "agent_trial_count", "trial key should remain stable");
   console.assert(normalizeHeader("List Price") === "listprice", "header normalization should work");
-  console.assert(findMappedField(["List Price"], MLS_FIELD_MAP.price) === "List Price", "price mapping should work");
+  console.assert(normalizeHeader("﻿Type of Property") === "typeofproperty", "BOM headers should normalize correctly");
+  console.assert(findMappedField(["Type of Property"], MLS_FIELD_MAP.type) === "Type of Property", "property type mapping should work");
+  console.assert(mapMlsRow({ "Type of Property": "Duplex" }).type === "Duplex", "property type should parse correctly");
+  console.assert(mapMlsRow({ "City Name": "Miami" }).city === "Miami", "city mapping should parse correctly");
+  console.assert(mapMlsRow({ "List Price": "$725,000" }).price === 725000, "formatted prices should parse correctly");
+  console.assert(findMappedField(["List Price"], MLS_FIELD_MAP.listPrice) === "List Price", "price mapping should work");
+  console.assert(findMappedField(["MLS #"], MLS_FIELD_MAP.listingId) === "MLS #", "MLS listing ID mapping should work");
+  console.assert(findMappedField(["#Beds"], MLS_FIELD_MAP.bedrooms) === "#Beds", "bedroom mapping should work");
+  console.assert(findMappedField(["SqFt LA"], MLS_FIELD_MAP.livingArea) === "SqFt LA", "living area mapping should work");
   console.assert(mapMlsRow({ "List Price": 500000, "Street Address": "123 Main St" }).price === 500000, "MLS row mapping should work");
   console.assert(typeof Papa.parse === "function", "PapaParse should be available");
   console.assert(analyzeRows([{ price: 300000, type: "duplex", address: "A" }], DEFAULT_ASSUMPTIONS).length === 1, "analysis should return one row");
