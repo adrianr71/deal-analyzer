@@ -308,15 +308,41 @@ function BodyCell({ children, align = "center", strong = false, compact = false,
 
 function normalizeHeader(header) { return String(header || "").replace(/^\uFEFF/, "").trim().toLowerCase().replace(/[^a-z0-9]/g, ""); }
 function findMappedField(headers, aliases) {
-  if (!Array.isArray(aliases)) return null;
-  const normalizedHeaders = headers.map((header) => ({ original: header, normalized: normalizeHeader(header) }));
+  if (!Array.isArray(aliases) || !Array.isArray(headers)) return null;
+
+  const normalizedHeaders = headers
+    .filter((header) => typeof header === "string" && header.trim() !== "")
+    .map((header) => ({
+      original: header,
+      normalized: normalizeHeader(header),
+    }))
+    .filter((item) => item.normalized.length >= 2);
+
   for (const alias of aliases) {
     const normalizedAlias = normalizeHeader(alias);
-    const exact = normalizedHeaders.find((item) => item.normalized === normalizedAlias);
+
+    if (!normalizedAlias || normalizedAlias.length < 2) continue;
+
+    const exact = normalizedHeaders.find(
+      (item) => item.normalized === normalizedAlias,
+    );
+
     if (exact) return exact.original;
-    const partial = normalizedHeaders.find((item) => item.normalized.includes(normalizedAlias) || normalizedAlias.includes(item.normalized));
+
+    const partial = normalizedHeaders.find((item) => {
+      if (item.normalized.length < 4 || normalizedAlias.length < 4) {
+        return false;
+      }
+
+      return (
+        item.normalized.includes(normalizedAlias) ||
+        normalizedAlias.includes(item.normalized)
+      );
+    });
+
     if (partial) return partial.original;
   }
+
   return null;
 }
 
@@ -377,6 +403,8 @@ function runSmokeTests() {
   console.assert(findMappedField(["#Beds"], MLS_FIELD_MAP.bedrooms) === "#Beds", "bedroom mapping should work");
   console.assert(findMappedField(["SqFt LA"], MLS_FIELD_MAP.livingArea) === "SqFt LA", "living area mapping should work");
   console.assert(findMappedField(["Bad Header"], undefined) === null, "missing alias lists should not crash");
+  console.assert(findMappedField(["1", "2", "3"], MLS_FIELD_MAP.city) === null, "numeric headers should never map to city");
+  console.assert(findMappedField(["1", "Address"], MLS_FIELD_MAP.address) === "Address", "real address headers should win over numeric values");
   console.assert(typeof Papa.parse === "function", "PapaParse should be available");
   console.assert(analyzeRows([{ price: 300000, type: "duplex", address: "A" }], DEFAULT_ASSUMPTIONS).length === 1, "analysis should return one row");
   console.assert(sortRows([{ score: 1 }, { score: 2 }], "score")[0].score === 2, "score sort should work");
