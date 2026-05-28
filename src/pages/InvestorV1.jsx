@@ -23,11 +23,61 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-950 p-6 text-white md:p-10">
       <div className="mx-auto max-w-6xl">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold">Rental Deal Screener</h1>
-          <p className="mt-2 max-w-3xl text-sm text-slate-300">
-            Screen rental deals in seconds. Save time and focus on properties worth deeper analysis.
-          </p>
+        <header className="relative mb-10 overflow-hidden rounded-3xl border border-blue-500/20 bg-gradient-to-br from-slate-900 via-slate-950 to-blue-950/40 p-8 shadow-2xl shadow-blue-950/20">
+          <div className="absolute inset-0 opacity-20">
+            <div className="absolute -left-20 top-0 h-72 w-72 rounded-full bg-cyan-500 blur-3xl" />
+            <div className="absolute right-0 top-10 h-72 w-72 rounded-full bg-blue-600 blur-3xl" />
+          </div>
+
+          <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="mb-4 inline-flex items-center rounded-full border border-cyan-400/20 bg-cyan-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">
+                Real-Time Rental Analysis
+              </div>
+
+              <h1 className="max-w-3xl text-4xl font-black leading-tight tracking-tight text-white md:text-5xl">
+                Rental Deal <span className="bg-gradient-to-r from-cyan-300 to-blue-400 bg-clip-text text-transparent">Screener</span>
+              </h1>
+
+              <p className="mt-5 max-w-3xl text-base leading-8 text-slate-300 md:text-lg">
+                Screen rental deals in seconds. Instantly estimate cash flow, cap rate, DSCR, cash-on-cash return, and deal strength before spending hours underwriting properties.
+              </p>
+
+              <div className="mt-6 flex flex-wrap gap-3 text-xs text-slate-400">
+                <div className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-2">
+                  Instant Cash Flow Analysis
+                </div>
+                <div className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-2">
+                  Cap Rate & DSCR Metrics
+                </div>
+                <div className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-2">
+                  Free Investor Screening Tool
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 rounded-3xl border border-slate-800 bg-slate-900/60 p-5 backdrop-blur">
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 text-center">
+                <div className="text-2xl font-black text-cyan-300">60s</div>
+                <div className="mt-1 text-xs uppercase tracking-wide text-slate-400">Analysis Time</div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 text-center">
+                <div className="text-2xl font-black text-green-300">8+</div>
+                <div className="mt-1 text-xs uppercase tracking-wide text-slate-400">Key Metrics</div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 text-center">
+                <div className="text-2xl font-black text-yellow-300">Free</div>
+                <div className="mt-1 text-xs uppercase tracking-wide text-slate-400">Investor Version</div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 text-center">
+                <div className="text-2xl font-black text-blue-300">Live</div>
+                <div className="mt-1 text-xs uppercase tracking-wide text-slate-400">Instant Results</div>
+              </div>
+            </div>
+          </div>
         </header>
 
         <section className="rounded-3xl border border-slate-800 bg-slate-900/50 p-6 shadow-2xl">
