@@ -30,7 +30,31 @@ const TRIAL_KEY = "agent_trial_count";
 const PAID_ACCESS_VALUE = 999;
 
 const MLS_FIELD_MAP = {
-  listingId: ["listingid", "listing id", "mls", "mls #", "mls number", "ml#", "mls id", "l_num", "lnum"],
+  listingId: [
+  "listingid",
+  "listing id",
+  "mls",
+  "mls #",
+  "mls number",
+  "mlsnum",
+  "mls_num",
+  "mls id",
+  "ml#",
+  "listing number",
+  "listingnum",
+  "listing_num",
+  "list no",
+  "l_num",
+  "lnum",
+  "matrix id",
+  "matrix unique id",
+  "listingkey",
+  "system id",
+  "mls # link",
+  "mls link",
+  "listing link",
+  "property link"
+],
   status: ["standardstatus", "status", "st", "listing status", "mls status", "link st"],
   address: ["unparsedaddress", "address", "street address", "property address", "full address", "addr", "street", "str"],
   city: ["city", "city name", "locality", "town", "twn", "municipality", "muni"],
@@ -200,22 +224,91 @@ export default function App() {
       <div className="mx-auto max-w-7xl">
         <div className="mb-6 flex flex-col gap-5">
           <header>
-            <h1 className="text-3xl font-bold">Rental Deal Screener for Real Estate Agents</h1>
-            <p className="mt-1 text-sm text-slate-400">Bulk screen rental deals in seconds using professional investment metrics commonly reviewed by real estate investors, DSCR lenders, mortgage professionals, and acquisition teams.</p>
-            <div className="mt-5 overflow-hidden rounded-3xl border border-blue-500/40 bg-gradient-to-r from-blue-950/80 via-slate-900 to-cyan-950/70 p-6 shadow-2xl shadow-blue-950/30">
+            <h1 className="text-3xl font-bold">
+  Rental Deal Screener Pro
+</h1>
+
+<p className="mt-1 text-lg font-medium text-cyan-300">
+  For Real Estate Agents
+</p>
+<p className="mt-1 text-sm text-slate-400">
+  Bulk analyze rental properties in seconds using NOI,
+  Cap Rate, Cash Flow, DSCR, CoC Return, and lender-focused
+  investment metrics commonly used by investors,
+  mortgage professionals, and DSCR loan providers.
+</p>            <div className="mt-5 overflow-hidden rounded-3xl border border-blue-500/40 bg-gradient-to-r from-blue-950/80 via-slate-900 to-cyan-950/70 p-6 shadow-2xl shadow-blue-950/30">
               <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                  <div className="inline-flex items-center rounded-full border border-blue-400/30 bg-blue-500/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-blue-300">Professional Agent Platform</div>
-                  <div className="mt-4 flex items-end gap-2"><div className="text-5xl font-black tracking-tight text-white md:text-6xl">$49</div><div className="pb-2 text-lg font-medium text-slate-300">/month</div></div>
-                  <div className="mt-3 max-w-2xl text-sm leading-7 text-slate-300 md:text-base">Bulk analyze up to 100 rental properties at once with professional deal scoring, CSV imports & exports, DSCR loan analysis, cash flow analysis, NOI calculations, cap rate screening, and advanced real estate agent workflows.</div>
-                  <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-400">
+                  {!isPaid ? (
+  <>
+    <div className="inline-flex items-center rounded-full border border-blue-400/30 bg-blue-500/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-blue-300">Professional Agent Platform</div>
+    <div className="mt-4 flex items-end gap-2">
+      <div className="text-5xl font-black tracking-tight text-white md:text-6xl">$49</div>
+      <div className="pb-2 text-lg font-medium text-slate-300">/month</div>
+    </div>
+  </>
+) : (
+  <>
+    <div className="inline-flex items-center rounded-full border border-green-400/30 bg-green-500/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-green-300">Professional Access Active</div>
+    <div className="mt-4 text-xl font-semibold text-green-300">Subscription Active</div>
+  </>
+)}
+<div className="mt-3 max-w-2xl text-sm leading-7 text-slate-300 md:text-base">
+  Analyze up to 100 rental properties at once using the same
+  professional investment metrics reviewed by real estate investors,
+  DSCR lenders, mortgage professionals, and acquisition teams.
+</div>
+
+<div className="mt-3 max-w-2xl text-sm leading-7 text-slate-400 md:text-base">
+  Import MLS exports, score deals automatically, calculate NOI,
+  Cash Flow, Cap Rate, CoC, DSCR, and export professional reports
+  in minutes.
+</div>
+
+{!isPaid && (
+  <div className="mt-5">
+    <button
+      onClick={() => setShowUpgradeModal(true)}
+      className="rounded-xl bg-cyan-500 px-6 py-3 text-sm font-semibold text-black transition hover:bg-cyan-400"
+    >
+      Start Subscription
+    </button>
+  </div>
+)}
+
+<div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-400">
                     <div className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">Individual Professional Plan</div>
                     <div className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">Cancel Anytime</div>
                     <div className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">Access Across Personal Devices</div>
                   </div>
+
+                  <div className="mt-4 text-xs leading-6 text-slate-500">
+  By subscribing, you agree to our{" "}
+  <a href="/terms" className="text-cyan-400 hover:underline">
+    Terms of Use
+  </a>{" "}
+  and{" "}
+  <a href="/privacy" className="text-cyan-400 hover:underline">
+    Privacy Policy
+  </a>.
+  <br />
+  Subscriptions renew automatically each month until canceled.
+  Cancel anytime. Access remains active through the end of your
+  billing period.
+</div>
                 </div>
                 <div className="min-w-[260px] rounded-2xl border border-cyan-400/30 bg-cyan-500/10 p-5 text-center">
-                  {!isPaid ? <><div className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">Free Trial Included</div><div className="mt-3 text-3xl font-bold text-white">{remainingTrials} Free</div><div className="mt-1 text-sm text-slate-300">Batch Analyses Remaining</div></> : <><div className="text-xs font-semibold uppercase tracking-[0.18em] text-green-300">Professional Access Active</div><div className="mt-3 text-3xl font-bold text-white">Unlimited</div><div className="mt-1 text-sm text-slate-300">Monthly Batch Access</div><div className="mt-4 text-xs leading-6 text-slate-400">Your professional subscription is currently active.</div></>}
+                  {!isPaid ? <><div className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
+  Free Trial
+</div>
+
+<div className="mt-3 text-3xl font-bold text-white">
+  {remainingTrials}
+</div>
+
+<div className="mt-1 text-sm text-slate-300">
+  Batch Analyses Remaining
+</div></> : <><div className="text-xs font-semibold uppercase tracking-[0.18em] text-green-300">Professional Access Active</div><div className="mt-3 text-3xl font-bold text-white">Unlimited</div><div className="mt-1 text-sm text-slate-300">Monthly Batch Access</div><div className="mt-4 text-xs leading-6 text-slate-400">Your professional subscription is currently active.</div></>}
                 </div>
               </div>
             </div>
@@ -223,7 +316,7 @@ export default function App() {
 
           <section className="rounded-2xl border border-slate-700 bg-slate-950/60 p-4 text-sm text-slate-300">
             <div className="flex items-center justify-between gap-3"><div className="text-base font-semibold text-white">How It Works</div><button type="button" onClick={() => setShowInstructions((prev) => !prev)} className="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs text-slate-300 transition hover:bg-slate-800 hover:text-white">{showInstructions ? "Hide Instructions ▲" : "Show Instructions ▼"}</button></div>
-            {showInstructions && <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4"><StepCard number="1" title="Import CSV File (100 Properties Max)" description="Upload a CSV containing up to 100 rental property listings per batch." /><StepCard number="2" title="Set Global Assumptions" description="Adjust financing, vacancy, maintenance, insurance, taxes, and rent assumptions." /><StepCard number="3" title="Analyze & Score Batch" description="Calculate NOI, cash flow, cap rate, CoC, DSCR, and professional deal scores." /><StepCard number="4" title="Export or Print Results" description="Export the full analyzed CSV or generate a printable investment summary." /></div>}
+            {showInstructions && <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4"><StepCard number="1" title="Import CSV File (100 Properties Max)" description="Upload a CSV containing up to 100 rental property listings per batch." /><StepCard number="2" title="Set Global Assumptions" description="Adjust financing, vacancy, maintenance, insurance, taxes, and rent assumptions." /><StepCard number="3" title="Analyze All Properties" description="Analyze all imported properties and calculate NOI, Cash Flow, Cap Rate, CoC, DSCR, and professional deal scores." /><StepCard number="4" title="Export or Print Results" description="Export the full analyzed CSV or print / save a PDF investment summary report for sharing and underwriting review." /></div>}
           </section>
 
           <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
@@ -239,12 +332,12 @@ export default function App() {
         </div>
 
         <AssumptionsPanel assumptions={assumptions} setAssumptions={handleAssumptionsChange} />
-        <div className="mb-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3 text-sm text-blue-200 print:hidden"><strong>Next Step:</strong> Fill out Global Assumptions as needed, then press <strong>Analyze Batch</strong> to process your imported properties.</div>
-        <div className="mb-6 flex flex-wrap items-center gap-3 print:hidden"><button onClick={runFreeTrialBatch} disabled={isProcessing || batchAnalyzed} className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition ${isProcessing || batchAnalyzed ? "cursor-not-allowed border border-slate-700 bg-slate-800 text-slate-500" : "border border-blue-500/40 bg-blue-500/10 text-blue-200 hover:bg-blue-500/20"}`}>{isProcessing ? "Analyzing Batch..." : batchAnalyzed ? "Batch Already Analyzed" : isPaid ? "Analyze Batch" : `Click Here to Analyze Batch • ${remainingTrials} Free Batches Remaining`}</button><div className="text-sm font-medium text-slate-300">Sort Results By:</div><select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white"><option value="score">Highest Score</option><option value="cashFlow">Highest Cash Flow</option><option value="price">Lowest Price</option></select></div>
+        <div className="mb-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3 text-sm text-blue-200 print:hidden"><strong>Next Step:</strong> Fill out Global Assumptions as needed, then press <strong>Analyze All Properties</strong> to process your imported properties.</div>
+        <div className="mb-6 flex flex-wrap items-center gap-3 print:hidden"><button onClick={runFreeTrialBatch} disabled={isProcessing || batchAnalyzed} className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition ${isProcessing || batchAnalyzed ? "cursor-not-allowed border border-slate-700 bg-slate-800 text-slate-500" : "border border-blue-500/40 bg-blue-500/10 text-blue-200 hover:bg-blue-500/20"}`}>{isProcessing ? "Analyzing Batch..." : batchAnalyzed ? "Batch Already Analyzed" : isPaid ? "Analyze All Properties" : `Click Here to Analyze All Properties • ${remainingTrials} Free Batches Remaining`}</button><div className="text-sm font-medium text-slate-300">Sort Results By:</div><select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white"><option value="score">Highest Score</option><option value="cashFlow">Highest Cash Flow</option><option value="price">Lowest Price</option></select></div>
 
         <PrintSummary rows={sortedAnalyzedRows} assumptions={assumptions} />
         <ResultsTable isProcessing={isProcessing} rows={sortedAnalyzedRows} sampleRows={samplePreviewRows} onUpdateRent={updateRowRent} />
-        <div className="mt-6 mb-6 flex flex-wrap items-center gap-3 print:hidden"><button onClick={handleExportCSV} disabled={sortedAnalyzedRows.length === 0} className="rounded-xl border border-green-500/40 bg-green-500/10 px-4 py-2 text-sm text-green-300 transition hover:bg-green-500/20 disabled:cursor-not-allowed disabled:opacity-40">Export Full CSV Results</button><button onClick={handlePrintSummary} disabled={sortedAnalyzedRows.length === 0} className="rounded-xl border border-slate-500/40 bg-slate-500/10 px-4 py-2 text-sm text-slate-200 transition hover:bg-slate-500/20 disabled:cursor-not-allowed disabled:opacity-40">Print Investment Summary</button></div>
+        <div className="mt-6 mb-6 flex flex-wrap items-center gap-3 print:hidden"><button onClick={handleExportCSV} disabled={sortedAnalyzedRows.length === 0} className="rounded-xl border border-green-500/40 bg-green-500/10 px-4 py-2 text-sm text-green-300 transition hover:bg-green-500/20 disabled:cursor-not-allowed disabled:opacity-40">Export Full CSV Results</button><button onClick={handlePrintSummary} disabled={sortedAnalyzedRows.length === 0} className="rounded-xl border border-slate-500/40 bg-slate-500/10 px-4 py-2 text-sm text-slate-200 transition hover:bg-slate-500/20 disabled:cursor-not-allowed disabled:opacity-40">Print / Save PDF Report</button></div>
         <div className="print:hidden"><MathLogicNote onDeveloperUnlock={activateDeveloperAccess} /></div>
         <footer className="mt-12 border-t border-slate-800 pt-6 text-center text-xs text-slate-400"><div className="flex flex-wrap justify-center gap-4"><button onClick={() => setActiveLegalModal("contact")} className="transition hover:text-white">Contact</button><button onClick={() => setActiveLegalModal("support")} className="transition hover:text-white">Support</button><a href="/terms" className="transition hover:text-white">Terms</a><a href="/privacy" className="transition hover:text-white">Privacy</a><a href="/disclaimer" className="transition hover:text-white">Disclaimer</a></div><div className="mt-3">© 2026 RentalDealScreener.pro · Operated by Caribmare LLC</div></footer>
         {activeLegalModal && <LegalModal type={activeLegalModal} onClose={() => setActiveLegalModal(null)} />}
