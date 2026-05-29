@@ -1,4 +1,3 @@
-```jsx
 export default function Terms() {
   return (
     <div className="min-h-screen bg-slate-950 px-6 py-12 text-slate-200">
@@ -220,4 +219,3 @@ export default function Terms() {
     </div>
   );
 }
-```
