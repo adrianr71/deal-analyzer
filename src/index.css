@@ -1,3 +1,24 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@media print {
+  body.printing-summary * {
+    visibility: hidden !important;
+  }
+
+  body.printing-summary .print-summary,
+  body.printing-summary .print-summary * {
+    visibility: visible !important;
+  }
+
+  body.printing-summary .print-summary {
+    display: block !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    background: white !important;
+    color: black !important;
+  }
+}
