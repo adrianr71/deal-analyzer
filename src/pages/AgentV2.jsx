@@ -168,10 +168,18 @@ export default function App() {
     logCalculateEvent(rows);
   }
 
-  function handlePrintSummary() {
-    logCalculateEvent(rows);
+function handlePrintSummary() {
+  logCalculateEvent(rows);
+  document.body.classList.add("printing-summary");
+
+  const cleanup = () => document.body.classList.remove("printing-summary");
+  window.addEventListener("afterprint", cleanup, { once: true });
+
+  window.setTimeout(() => {
     window.print();
-  }
+    window.setTimeout(cleanup, 500);
+  }, 50);
+}
 
   function handleImportCSV(event) {
     const file = event.target.files?.[0];
