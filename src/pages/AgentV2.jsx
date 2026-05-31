@@ -450,11 +450,13 @@ function mapMlsRow(row, rowNumber = null) {
     sourceRow: rowNumber, price: parseNumber(row[mapped.price]), address: row[mapped.address] || "", city: row[mapped.city] || "", state: row[mapped.state] || "", zip: row[mapped.zip] || "", type: row[mapped.type] || "", mls: row[mapped.mls] || "", rentManual: row[mapped.rent] ? parseNumber(row[mapped.rent]) : null, status: row[mapped.status] || "", subdivision: row[mapped.subdivision] || "", daysOnMarket: parseNumber(row[mapped.daysOnMarket]), bedrooms: parseNumber(row[mapped.bedrooms]), fullBaths: parseNumber(row[mapped.fullBaths]), halfBaths: parseNumber(row[mapped.halfBaths]), yearBuilt: parseNumber(row[mapped.yearBuilt]), livingArea: parseNumber(row[mapped.livingArea]), lotSizeSquareFeet: parseNumber(row[mapped.lotSizeSquareFeet]), garageSpaces: parseNumber(row[mapped.garageSpaces]), poolPrivateYN: parseBoolean(row[mapped.poolPrivateYN]),
   };
   const notes = [];
-  if (!parsed.price) notes.push("Missing or invalid price");
-  if (!parsed.address && !parsed.mls) notes.push("Missing address or MLS #");
-  if (!parsed.city) notes.push("Missing city");
-  if (!parsed.type) notes.push("Missing property type");
-  parsed.importStatus = notes.length ? "Needs Review" : "Analyzed";
+if (!parsed.price) notes.push("Missing or invalid price");
+if (!parsed.address && !parsed.mls) notes.push("Missing address or MLS #");
+if (!parsed.city) notes.push("Missing city");
+if (!parsed.type) notes.push("Missing property type");
+
+const blockingNotes = notes.filter((note) => note !== "Missing city");
+parsed.importStatus = blockingNotes.length ? "Needs Review" : "Analyzed";
   parsed.importNotes = notes.join("; ") || "Complete";
   return parsed;
 }
