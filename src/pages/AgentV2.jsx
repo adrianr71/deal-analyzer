@@ -28,6 +28,7 @@ const AGENT_FREE_BATCH_LIMIT = 20;
 const AGENT_FREE_TRIALS = 3;
 const SESSION_KEY = "agent_analyzer_session";
 const TRIAL_KEY = "agent_trial_count";
+const BRANDING_KEY = "agent_report_branding";
 const PAID_ACCESS_VALUE = 999;
 
 const MLS_FIELD_MAP = {
@@ -90,6 +91,7 @@ export default function App() {
   const [showInstructions, setShowInstructions] = useState(true);
   const [remainingTrials, setRemainingTrials] = useState(() => loadRemainingTrials());
   const [importSummary, setImportSummary] = useState(null);
+  const [reportBranding, setReportBranding] = useState(() => loadReportBranding());
 
   const isPaid = remainingTrials === PAID_ACCESS_VALUE;
   const activeBatchLimit = isPaid ? AGENT_BATCH_LIMIT : AGENT_FREE_BATCH_LIMIT;   
@@ -99,6 +101,10 @@ export default function App() {
   function handleAssumptionsChange(nextAssumptions) {
     setAssumptions(nextAssumptions);
     if (batchAnalyzed && rows.length > 0) setAnalyzedRows(analyzeRows(rows, nextAssumptions));
+
+function handleReportBrandingChange(nextBranding) {
+  setReportBranding(nextBranding);
+  localStorage.setItem(BRANDING_KEY, JSON.stringify(nextBranding));
   }
 
   function updateRowRent(rowToUpdate, value) {
