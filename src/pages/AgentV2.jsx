@@ -24,6 +24,7 @@ const SAMPLE_ROWS = [
 ];
 
 const AGENT_BATCH_LIMIT = 100;
+const AGENT_FREE_BATCH_LIMIT = 20;
 const AGENT_FREE_TRIALS = 3;
 const SESSION_KEY = "agent_analyzer_session";
 const TRIAL_KEY = "agent_trial_count";
@@ -91,6 +92,7 @@ export default function App() {
   const [importSummary, setImportSummary] = useState(null);
 
   const isPaid = remainingTrials === PAID_ACCESS_VALUE;
+  const activeBatchLimit = isPaid ? AGENT_BATCH_LIMIT : AGENT_FREE_BATCH_LIMIT;   
   const sortedAnalyzedRows = useMemo(() => sortRows(analyzedRows, sortBy), [analyzedRows, sortBy]);
   const samplePreviewRows = useMemo(() => analyzeRows(SAMPLE_ROWS, assumptions), [assumptions]);
 
