@@ -249,8 +249,8 @@ function handlePrintSummary() {
   </>
 ) : (
   <>
-    <div className="inline-flex items-center rounded-full border border-green-400/30 bg-green-500/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-green-300">Professional Access Active</div>
-    <div className="mt-4 text-xl font-semibold text-green-300">Subscription Active</div>
+    <div className="inline-flex items-center rounded-full border border-green-400/30 bg-green-500/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-green-300">Professional Subscription Access Active</div>
+    <div className="mt-4 text-xl font-semibold text-green-300">Unlimited Monthly Batch Access</div>
   </>
 )}
 <div className="mt-3 max-w-2xl text-sm leading-7 text-slate-300 md:text-base">
