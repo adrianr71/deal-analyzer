@@ -471,6 +471,170 @@ function AssumptionInput({ label, value, onChange }) { return <label><div classN
 function MathLogicNote({ onDeveloperUnlock }) { return <div className="mt-6 space-y-6"><div className="rounded-2xl border border-slate-700 bg-slate-950/70 p-4 text-sm"><div className="font-semibold text-white">Professional Investment & Lending Metrics Used</div><div className="mt-2 text-slate-300">Gross Rent → Operating Expenses + HOA → NOI → Debt Service → Monthly Cash Flow → Cap Rate / CoC / DSCR</div><div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-6"><GlossaryCard title="NOI" good="Positive NOI = Good" bad="Negative NOI = Poor" formula="NOI = Gross Rent − Operating Expenses" /><GlossaryCard title="MONTHLY CASH FLOW" good="Positive = Good" bad="Negative = Poor" formula="Monthly Cash Flow = NOI − Monthly Debt Service" /><GlossaryCard title="CAP RATE" good="> 7.0% Good" average="5.0–6.9% Average" bad="< 5.0% Poor" formula="Cap Rate = NOI / Property Price" /><GlossaryCard title="COC" good="> 8.0% Good" average="4.0–7.9% Average" bad="< 4.0% Poor" formula="CoC = Annual Cash Flow / Cash Invested" /><GlossaryCard title="DSCR" good="> 1.20x Good" average="1.00–1.19 Average" bad="< 1.00 Poor" formula="DSCR = NOI / Annual Debt Service" /><GlossaryCard title="EXPENSE RATIO" good="< 35% Good" average="35%–45% Average" bad="> 45% Poor" formula="Expense Ratio = Operating Expenses / Gross Rent" /></div><div className="mt-4 rounded-xl border border-blue-500/30 bg-blue-500/10 p-4 text-xs text-slate-300"><div className="mb-2 font-semibold text-blue-200">Professional Deal Scoring Model (0–100)</div><div>NOI: 15% • Monthly Cash Flow: 25% • Cap Rate: 20% • CoC: 20% • DSCR: 15% • Expense Ratio: 5%</div><div className="mt-3 text-[11px] text-slate-400">Scoring penalties may reduce scores for negative cash flow, low DSCR, high expense ratios, or negative NOI.</div></div></div><div className="rounded-2xl border border-slate-700 bg-slate-950/70 p-5 text-sm text-slate-300"><div className="mb-4 text-base font-semibold text-white">Disclaimer & Footnotes</div><div className="space-y-4 leading-7"><p>This tool is intended for preliminary investment screening, educational analysis, rental property underwriting review, and informational purposes only.</p><p>Professional Agent Access is intended for individual professional use. Future additional seat and brokerage access options may become available separately.</p><p>All calculations, deal scoring models, rent assumptions, cap rates, DSCR values, cash-on-cash returns, NOI calculations, expense ratios, and cash flow projections are estimates based on user inputs and assumptions that may differ from actual market conditions.</p><p>This application does not constitute financial, legal, tax, lending, brokerage, appraisal, accounting, or investment advice. Users should independently verify rents, expenses, financing assumptions, insurance costs, taxes, repair budgets, vacancy assumptions, HOA fees, and investment suitability with qualified professionals before making financial or real estate decisions.</p><p>The creators and publishers assume no liability for errors, omissions, market fluctuations, financing outcomes, underwriting inaccuracies, or investment results arising from the use of this application.</p><div className="mt-6 rounded-xl border border-slate-700 bg-slate-900/60 p-4 text-xs leading-6 text-slate-400"><div className="mb-2 font-semibold text-slate-200">Footnotes</div><p><strong>1.</strong> <strong>Estimated Financing APR %</strong> represents an estimated annual borrowing cost that may include lender fees, financing costs, points, and other loan-related charges beyond the base interest rate.</p><p><strong>2.</strong> <strong>NOI (Net Operating Income)</strong> represents income remaining after operating expenses but before mortgage payments.</p><p><strong>3.</strong> <strong>Monthly Cash Flow</strong> represents the estimated money remaining each month after operating expenses and mortgage payments.</p><p><strong>4.</strong> <strong>Cap Rate</strong> measures property yield by dividing annual NOI by purchase price.</p><p><strong>5.</strong> <strong>COC (Cash-on-Cash Return)</strong> measures annual cash flow relative to total invested <button type="button" onClick={onDeveloperUnlock} className="cursor-text text-slate-400 underline-offset-2 hover:text-slate-300 focus:outline-none">cash</button>.</p><p><strong>6.</strong> <strong>DSCR (Debt Service Coverage Ratio)</strong> measures whether the property's rental income can safely cover mortgage payments. DSCR is commonly reviewed by DSCR lenders, mortgage professionals, banks, and investment property loan programs during underwriting.</p><p><strong>7.</strong> <strong>Expense Ratio</strong> measures how much rental income is consumed by operating expenses before mortgage payments.</p></div></div></div></div>; }
 function GlossaryCard({ title, good, average, bad, formula }) { return <div className="rounded-2xl border border-slate-700 bg-slate-950/80 p-4 text-xs"><div className="mb-3 text-sm font-semibold text-white">{title}</div><div className="space-y-1 leading-5">{good && <div className="text-green-400">{good}</div>}{average && <div className="text-yellow-400">{average}</div>}{bad && <div className="text-red-400">{bad}</div>}</div><div className="mt-4 text-[11px] leading-5 text-slate-400">{formula}</div></div>; }
 
+function printResultsReport(rows, assumptions) {
+  if (!rows || rows.length === 0) {
+    alert("Please analyze properties before printing a report.");
+    return;
+  }
+
+  const reportWindow = window.open("", "_blank", "width=1200,height=800");
+
+  if (!reportWindow) {
+    alert("Please allow pop-ups to print the report.");
+    return;
+  }
+
+  const generatedAt = new Date().toLocaleString();
+
+  const rowsHtml = rows.map((row) => `
+    <tr>
+      <td>${escapeHtml(row.rating || "")}</td>
+      <td>${Number(row.score || 0).toFixed(1)}</td>
+      <td>${escapeHtml(row.propertyType || "")}</td>
+      <td>${escapeHtml(row.address || "")}</td>
+      <td>${escapeHtml(row.city || "")}</td>
+      <td>${formatCurrency(row.price)}</td>
+      <td>${formatCurrency(row.monthlyRent)}</td>
+      <td>${formatCurrency((row.noiMonthly || 0) * 12)}</td>
+      <td>${formatCurrency(row.monthlyCashFlow)}</td>
+      <td>${formatPercent(row.capRate)}</td>
+      <td>${formatPercent(row.cashOnCash)}</td>
+      <td>${Number(row.dscr || 0).toFixed(2)}x</td>
+      <td>${formatPercent(row.expenseRatio)}</td>
+      <td>${escapeHtml(row.mls || "")}</td>
+    </tr>
+  `).join("");
+
+  reportWindow.document.write(`
+    <!doctype html>
+    <html>
+      <head>
+        <title>Rental Deal Screener Report</title>
+        <style>
+          @page {
+            size: landscape;
+            margin: 0.35in;
+          }
+
+          body {
+            font-family: Arial, sans-serif;
+            color: #111827;
+            background: white;
+            margin: 0;
+            padding: 24px;
+          }
+
+          h1 {
+            margin: 0;
+            font-size: 22px;
+          }
+
+          .subtitle {
+            margin-top: 4px;
+            color: #475569;
+            font-size: 12px;
+          }
+
+          .meta {
+            margin-top: 14px;
+            display: flex;
+            gap: 18px;
+            font-size: 11px;
+            color: #334155;
+          }
+
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 18px;
+            font-size: 10px;
+          }
+
+          th {
+            background: #0f172a;
+            color: white;
+            text-align: left;
+            padding: 7px 6px;
+            border: 1px solid #1e293b;
+            white-space: nowrap;
+          }
+
+          td {
+            padding: 6px;
+            border: 1px solid #cbd5e1;
+            vertical-align: top;
+          }
+
+          tr:nth-child(even) td {
+            background: #f8fafc;
+          }
+
+          .disclaimer {
+            margin-top: 16px;
+            font-size: 10px;
+            color: #475569;
+            line-height: 1.5;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Rental Deal Screener Pro</h1>
+        <div class="subtitle">Printable Property Analysis Report</div>
+
+        <div class="meta">
+          <div><strong>Properties:</strong> ${rows.length}</div>
+          <div><strong>Generated:</strong> ${escapeHtml(generatedAt)}</div>
+          <div><strong>APR:</strong> ${Number(assumptions.interestRate || 0).toFixed(2)}%</div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Rating</th>
+              <th>Score</th>
+              <th>Type</th>
+              <th>Address</th>
+              <th>City</th>
+              <th>Price</th>
+              <th>Rent</th>
+              <th>NOI</th>
+              <th>Cash Flow</th>
+              <th>Cap</th>
+              <th>CoC</th>
+              <th>DSCR</th>
+              <th>Expense</th>
+              <th>MLS</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+
+        <div class="disclaimer">
+          This report is for preliminary investment screening and informational purposes only. Users should independently verify rents, expenses, financing, taxes, insurance, repairs, vacancies, and investment suitability.
+        </div>
+
+        <script>
+          window.onload = function () {
+            window.focus();
+            window.print();
+          };
+        </script>
+      </body>
+    </html>
+  `);
+
+  reportWindow.document.close();
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function exportAgentCSV(rows) { if (!rows || !rows.length) return; const headers = ["Analysis_Status", "Import_Notes", "Source_Row", "MLS_ID", "Property_Address", "City", "State", "Property_Type", "Price", "Score_0_to_100", "Rating", "Annual_NOI", "Monthly_Cash_Flow", "Cap_Rate", "Cash_on_Cash_Return", "Debt_Coverage_Ratio", "Expense_Ratio", "Monthly_Rent", "Beds", "Full_Baths", "Half_Baths", "Year_Built", "Living_Area", "Days_On_Market", "Subdivision"]; const body = rows.map((row) => [row.importStatus || "Analyzed", row.importNotes || "Complete", row.sourceRow || "", row.mls, row.address, row.city, row.state, row.propertyType, Math.round(row.price), row.score.toFixed(1), row.rating, Math.round(row.noiMonthly * 12), Math.round(row.monthlyCashFlow), row.capRate.toFixed(2), row.cashOnCash.toFixed(2), row.dscr.toFixed(2), row.expenseRatio.toFixed(2), Math.round(row.monthlyRent), row.bedrooms || "", row.fullBaths || "", row.halfBaths || "", row.yearBuilt || "", row.livingArea || "", row.daysOnMarket || "", row.subdivision || ""]); const csv = [headers, ...body].map((line) => line.map((value) => `"${String(value ?? "").replaceAll('"', '""')}"`).join(",")).join("\n"); const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; const requestedName = window.prompt("Name your file (client or property):", "Rental Deal Analysis");
 if (requestedName === null) {
   URL.revokeObjectURL(url);
