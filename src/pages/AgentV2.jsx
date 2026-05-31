@@ -190,7 +190,7 @@ function handlePrintSummary() {
       complete: (results) => {
         const allRows = results.data.map((row, index) => mapMlsRow(row, index + 2));
         const validRows = allRows.filter((row) => row.importStatus === "Analyzed");
-        const limitedRows = validRows.slice(0, AGENT_BATCH_LIMIT);
+        const limitedRows = validRows.slice(0, activeBatchLimit);
         const invalidCount = allRows.length - validRows.length;
         const headers = Object.keys(results.data?.[0] || {});
 
@@ -212,7 +212,7 @@ function handlePrintSummary() {
 
         alert(`${limitedRows.length} properties imported successfully. ${invalidCount > 0 ? `${invalidCount} rows need attention. ` : ""}Next: Fill out Global Assumptions, then press Analyze Batch.`);
 
-        if (validRows.length > AGENT_BATCH_LIMIT) alert(`Only the first ${AGENT_BATCH_LIMIT} valid properties were imported for this batch.`);
+        if (validRows.length > activeBatchLimit) alert(`Only the first ${activeBatchLimit} valid properties were imported for this batch.`);
       },
       error: (error) => {
         console.error("CSV parsing error:", error);
