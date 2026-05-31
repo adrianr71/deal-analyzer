@@ -23,7 +23,8 @@ const SAMPLE_ROWS = [
   { mls: "SAMPLE-001", type: "Triplex", address: "123 Sample Avenue", city: "Miami", state: "FL", price: 725000, rentManual: 5400 },
 ];
 
-const AGENT_BATCH_LIMIT = 100;
+const AGENT_FREE_BATCH_LIMIT = 20;
+const AGENT_PAID_BATCH_LIMIT = 100;
 const AGENT_FREE_TRIALS = 3;
 const SESSION_KEY = "agent_analyzer_session";
 const TRIAL_KEY = "agent_trial_count";
