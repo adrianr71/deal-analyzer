@@ -170,15 +170,7 @@ export default function App() {
 
 function handlePrintSummary() {
   logCalculateEvent(rows);
-  document.body.classList.add("printing-summary");
-
-  const cleanup = () => document.body.classList.remove("printing-summary");
-  window.addEventListener("afterprint", cleanup, { once: true });
-
-  window.setTimeout(() => {
-    window.print();
-    window.setTimeout(cleanup, 500);
-  }, 50);
+  printResultsReport(sortedAnalyzedRows, assumptions);
 }
 
   function handleImportCSV(event) {
