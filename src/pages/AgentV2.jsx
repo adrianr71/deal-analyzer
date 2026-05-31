@@ -453,12 +453,16 @@ function mapMlsRow(row, rowNumber = null) {
 if (!parsed.price) notes.push("Missing or invalid price");
 if (!parsed.address && !parsed.mls) notes.push("Missing address or MLS #");
 if (!parsed.city) notes.push("Missing city");
-if (!parsed.type) notes.push("Missing property type");
+if (!parsed.type) notes.push("Missing property type - analyzed as Single / Condo");
 
-const blockingNotes = notes.filter((note) => note !== "Missing city");
+const blockingNotes = notes.filter((note) =>
+  note === "Missing or invalid price" ||
+  note === "Missing address or MLS #"
+);
+
 parsed.importStatus = blockingNotes.length ? "Needs Review" : "Analyzed";
-  parsed.importNotes = notes.join("; ") || "Complete";
-  return parsed;
+parsed.importNotes = notes.join("; ") || "Complete";
+return parsed;
 }
 
 function normalizePropertyType(type) { const text = String(type || "").toLowerCase(); if (text.includes("four") || text.includes("quad") || text.includes("4plex")) return { units: 4, propertyType: "Fourplex" }; if (text.includes("triplex") || text.includes("3plex")) return { units: 3, propertyType: "Triplex" }; if (text.includes("duplex") || text.includes("2plex")) return { units: 2, propertyType: "Duplex" }; return { units: 1, propertyType: "Single / Condo" }; }
