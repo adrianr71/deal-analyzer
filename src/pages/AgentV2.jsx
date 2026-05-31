@@ -327,7 +327,7 @@ function handlePrintSummary() {
           </section>
 
           <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
-            <div className="print:hidden"><button type="button" onClick={() => fileInputRef.current?.click()} className="h-full rounded-2xl border border-cyan-500/40 bg-cyan-500/10 px-5 py-4 text-sm font-semibold text-cyan-300 transition hover:bg-cyan-500/20">Import CSV File</button></div>
+            <div className="print:hidden lg:w-auto"><button type="button" onClick={() => fileInputRef.current?.click()} className="h-full w-full rounded-2xl border border-cyan-500/40 bg-cyan-500/10 px-5 py-4 text-sm font-semibold text-cyan-300 transition hover:bg-cyan-500/20">Import CSV File</button></div>
             <button onClick={startNewSession} disabled={!batchAnalyzed} className={`rounded-2xl px-5 py-4 text-sm font-semibold transition ${!batchAnalyzed ? "cursor-not-allowed border border-slate-800 bg-slate-900 text-slate-600" : "border border-red-500/40 bg-red-500/10 text-red-300 hover:bg-red-500/20"}`}>Start Next Batch</button>
             <label onDragOver={(event) => { event.preventDefault(); event.stopPropagation(); }} onDrop={(event) => { event.preventDefault(); event.stopPropagation(); const droppedFile = event.dataTransfer.files?.[0]; if (!droppedFile) return; handleImportCSV({ target: { files: [droppedFile] } }); }} className="flex min-h-[64px] flex-1 cursor-pointer items-center justify-center rounded-2xl border border-dashed border-cyan-500/40 bg-slate-950/50 px-6 py-4 text-center transition hover:border-cyan-400/70 hover:bg-cyan-500/5">
               <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleImportCSV} />
