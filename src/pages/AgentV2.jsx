@@ -253,17 +253,21 @@ function handlePrintSummary() {
     <div className="mt-4 text-xl font-semibold text-green-300">Unlimited Monthly Batch Access</div>
   </>
 )}
-<div className="mt-3 max-w-2xl text-sm leading-7 text-slate-300 md:text-base">
-  Analyze up to 100 rental properties at once using the same
-  professional investment metrics reviewed by real estate investors,
-  DSCR lenders, mortgage professionals, and acquisition teams.
-</div>
+{!isPaid && (
+  <>
+    <div className="mt-3 max-w-2xl text-sm leading-7 text-slate-300 md:text-base">
+      Analyze up to 100 rental properties at once using the same
+      professional investment metrics reviewed by real estate investors,
+      DSCR lenders, mortgage professionals, and acquisition teams.
+    </div>
 
-<div className="mt-3 max-w-2xl text-sm leading-7 text-slate-400 md:text-base">
-  Import MLS exports, score deals automatically, calculate NOI,
-  Cash Flow, Cap Rate, CoC, DSCR, and export professional reports
-  in minutes.
-</div>
+    <div className="mt-3 max-w-2xl text-sm leading-7 text-slate-400 md:text-base">
+      Import MLS exports, score deals automatically, calculate NOI,
+      Cash Flow, Cap Rate, CoC, DSCR, and export professional reports
+      in minutes.
+    </div>
+  </>
+)}
 
 {!isPaid && (
   <div className="mt-5">
