@@ -304,7 +304,7 @@ function handlePrintSummary() {
   </>
 )}
                 </div>
-                <div className="min-w-[260px] rounded-2xl border border-cyan-400/30 bg-cyan-500/10 p-5 text-center">
+         <div className={`${isPaid ? "hidden" : ""} min-w-[260px] rounded-2xl border border-cyan-400/30 bg-cyan-500/10 p-5 text-center`}>
                   {!isPaid ? <><div className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
   Free Trial
 </div>
