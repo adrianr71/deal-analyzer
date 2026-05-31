@@ -279,7 +279,8 @@ function handlePrintSummary() {
     </button>
   </div>
 )}
-
+{!isPaid && (
+  <>
 <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-400">
                     <div className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">Individual Professional Plan</div>
                     <div className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">Cancel Anytime</div>
@@ -300,6 +301,8 @@ function handlePrintSummary() {
   Cancel anytime. Access remains active through the end of your
   billing period.
 </div>
+  </>
+)}
                 </div>
                 <div className="min-w-[260px] rounded-2xl border border-cyan-400/30 bg-cyan-500/10 p-5 text-center">
                   {!isPaid ? <><div className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
