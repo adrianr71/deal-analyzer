@@ -622,13 +622,16 @@ const brandingHtml = brandingLines.length
 
 .agent-brand {
   text-align: right;
-  font-size: 11px;
+  font-size: 13px;
+  line-height: 1.35;
   color: #334155;
+  min-width: 220px;
 }
 
 .agent-name {
   font-weight: 700;
   color: #0f172a;
+  font-size: 14px;
 }
 
 .agent-note {
