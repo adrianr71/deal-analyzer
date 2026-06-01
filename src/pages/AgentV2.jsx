@@ -491,17 +491,40 @@ function MetricBox({ value, status, compact = false }) { const styles = { good: 
 function metricStatus(value, type) { if (type === "cap") return value >= 7 ? "good" : value >= 5 ? "avg" : "bad"; if (type === "coc") return value >= 8 ? "good" : value >= 4 ? "avg" : "bad"; if (type === "dscr") return value >= 1.2 ? "good" : value >= 1 ? "avg" : "bad"; if (type === "expense") return value < 35 ? "good" : value <= 45 ? "avg" : "bad"; return "bad"; }
 
 function BrandingPanel({ branding, onChange }) {
+  const hasBranding = Boolean(
+    branding.agentName || branding.company || branding.phone || branding.email
+  );
+  const [showBrandingPanel, setShowBrandingPanel] = useState(!hasBranding);
   const update = (key, value) => onChange({ ...branding, [key]: value });
 
   return (
     <div className="mb-6 rounded-2xl border border-slate-700 bg-slate-950/70 p-4">
-      <div className="mb-4 text-lg font-semibold">Report Branding</div>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <BrandingInput label="Agent Name" value={branding.agentName} onChange={(v) => update("agentName", v)} />
-        <BrandingInput label="Company / Brokerage" value={branding.company} onChange={(v) => update("company", v)} />
-        <BrandingInput label="Phone" value={branding.phone} onChange={(v) => update("phone", v)} />
-        <BrandingInput label="Email" value={branding.email} onChange={(v) => update("email", v)} />
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div>
+          <div className="text-lg font-semibold">Report Branding</div>
+          {hasBranding && (
+            <div className="mt-1 text-xs text-slate-400">
+              Saved for future branded reports on this device.
+            </div>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowBrandingPanel((prev) => !prev)}
+          className="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs text-slate-300 transition hover:bg-slate-800 hover:text-white"
+        >
+          {showBrandingPanel ? "Hide Branding ▲" : "Edit Branding ▼"}
+        </button>
       </div>
+
+      {showBrandingPanel && (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <BrandingInput label="Agent Name" value={branding.agentName} onChange={(v) => update("agentName", v)} />
+          <BrandingInput label="Company / Brokerage" value={branding.company} onChange={(v) => update("company", v)} />
+          <BrandingInput label="Phone" value={branding.phone} onChange={(v) => update("phone", v)} />
+          <BrandingInput label="Email" value={branding.email} onChange={(v) => update("email", v)} />
+        </div>
+      )}
     </div>
   );
 }
