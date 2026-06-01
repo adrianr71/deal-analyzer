@@ -513,7 +513,7 @@ function BrandingPanel({ branding, onChange }) {
           onClick={() => setShowBrandingPanel((prev) => !prev)}
           className="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs text-slate-300 transition hover:bg-slate-800 hover:text-white"
         >
-          {showBrandingPanel ? "Hide Branding ▲" : "Edit Branding ▼"}
+          {showBrandingPanel ? "Hide Branding" : "Edit Branding"}
         </button>
       </div>
 
