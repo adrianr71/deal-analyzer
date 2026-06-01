@@ -98,14 +98,15 @@ export default function App() {
   const sortedAnalyzedRows = useMemo(() => sortRows(analyzedRows, sortBy), [analyzedRows, sortBy]);
   const samplePreviewRows = useMemo(() => analyzeRows(SAMPLE_ROWS, assumptions), [assumptions]);
 
-  function handleAssumptionsChange(nextAssumptions) {
-    setAssumptions(nextAssumptions);
-    if (batchAnalyzed && rows.length > 0) setAnalyzedRows(analyzeRows(rows, nextAssumptions));
+function handleAssumptionsChange(nextAssumptions) {
+  setAssumptions(nextAssumptions);
+  if (batchAnalyzed && rows.length > 0) setAnalyzedRows(analyzeRows(rows, nextAssumptions));
+}
 
 function handleReportBrandingChange(nextBranding) {
   setReportBranding(nextBranding);
   localStorage.setItem(BRANDING_KEY, JSON.stringify(nextBranding));
-  }
+}
 
   function updateRowRent(rowToUpdate, value) {
     const updatedRows = rows.map((row) => {
