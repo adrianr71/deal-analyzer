@@ -367,6 +367,7 @@ function handlePrintSummary() {
 
 function loadSavedRows() { try { const saved = sessionStorage.getItem(SESSION_KEY); const parsed = saved ? JSON.parse(saved) : []; return Array.isArray(parsed) ? parsed : []; } catch { return []; } }
 function loadRemainingTrials() { try { const saved = localStorage.getItem(TRIAL_KEY); return saved ? Number(saved) : AGENT_FREE_TRIALS; } catch { return AGENT_FREE_TRIALS; } }
+function loadReportBranding() { try { const saved = localStorage.getItem(BRANDING_KEY); return saved ? JSON.parse(saved) : { agentName: "", company: "", phone: "", email: "" }; } catch { return { agentName: "", company: "", phone: "", email: "" }; } }
 function analyzeRows(rows, assumptions) { return rows.map((row) => analyzeRow(row, assumptions)); }
 
 function analyzeRow(row, assumptions) {
