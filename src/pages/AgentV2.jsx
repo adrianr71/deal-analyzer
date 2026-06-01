@@ -323,7 +323,8 @@ function handlePrintSummary() {
 </div>
 
 <div className="mt-1 text-sm text-slate-300">
-  Batch Analyses Remaining
+  Practice Batches Remaining
+<div className="mt-3 text-xs leading-5 text-slate-400">20 Properties Max Per Trial Batch</div>
 </div></> : <><div className="text-xs font-semibold uppercase tracking-[0.18em] text-green-300">Professional Access Active</div><div className="mt-3 text-3xl font-bold text-white">Unlimited</div><div className="mt-1 text-sm text-slate-300">Monthly Batch Access</div><div className="mt-4 text-xs leading-6 text-slate-400">Your professional subscription is currently active.</div></>}
                 </div>
               </div>
@@ -332,7 +333,7 @@ function handlePrintSummary() {
 
           <section className="rounded-2xl border border-slate-700 bg-slate-950/60 p-4 text-sm text-slate-300">
             <div className="flex items-center justify-between gap-3"><div className="text-base font-semibold text-white">How It Works</div><button type="button" onClick={() => setShowInstructions((prev) => !prev)} className="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs text-slate-300 transition hover:bg-slate-800 hover:text-white">{showInstructions ? "Hide Instructions ▲" : "Show Instructions ▼"}</button></div>
-            {showInstructions && <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4"><StepCard number="1" title="Import CSV File (100 Properties Max)" description="Upload a CSV containing up to 100 rental property listings per batch." /><StepCard number="2" title="Set Global Assumptions" description="Adjust financing, vacancy, maintenance, insurance, taxes, and rent assumptions." /><StepCard number="3" title="Analyze All Properties" description="Analyze all imported properties and calculate NOI, Cash Flow, Cap Rate, CoC, DSCR, and professional deal scores." /><StepCard number="4" title="Export or Print Results" description="Export the full analyzed CSV or print / save a PDF investment summary report for sharing and underwriting review." /></div>}
+            {showInstructions && <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4"><StepCard number="1" title="Import CSV File" description="Upload up to 20 properties per free trial batch. Paid access supports up to 100 properties per batch." /><StepCard number="2" title="Set Global Assumptions" description="Adjust financing, vacancy, maintenance, insurance, taxes, and rent assumptions." /><StepCard number="3" title="Analyze All Properties" description="Analyze all imported properties and calculate NOI, Cash Flow, Cap Rate, CoC, DSCR, and professional deal scores." /><StepCard number="4" title="Export or Print Results" description="Export the full analyzed CSV or print / save a PDF investment summary report for sharing and underwriting review." /></div>}
           </section>
 
           <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
@@ -348,6 +349,7 @@ function handlePrintSummary() {
         </div>
 
         <AssumptionsPanel assumptions={assumptions} setAssumptions={handleAssumptionsChange} />
+        {isPaid && <BrandingPanel branding={reportBranding} onChange={handleReportBrandingChange} />}
         <div className="mb-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3 text-sm text-blue-200 print:hidden"><strong>Next Step:</strong> Fill out Global Assumptions as needed, then press <strong>Analyze All Properties</strong> to process your imported properties.</div>
         <div className="mb-6 flex flex-wrap items-center gap-3 print:hidden"><button onClick={runFreeTrialBatch} disabled={isProcessing || batchAnalyzed} className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition ${isProcessing || batchAnalyzed ? "cursor-not-allowed border border-slate-700 bg-slate-800 text-slate-500" : "border border-blue-500/40 bg-blue-500/10 text-blue-200 hover:bg-blue-500/20"}`}>{isProcessing ? "Analyzing Batch..." : batchAnalyzed ? "Batch Already Analyzed" : isPaid ? "Analyze All Properties" : `Click Here to Analyze All Properties • ${remainingTrials} Free Batches Remaining`}</button><div className="text-sm font-medium text-slate-300">Sort Results By:</div><select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white"><option value="score">Highest Score</option><option value="cashFlow">Highest Cash Flow</option><option value="price">Lowest Price</option></select></div>
 
@@ -487,6 +489,31 @@ function calculateDealScore({ monthlyCashFlow, capRate, cashOnCash, dscr, noiAnn
 function DecisionBadge({ label, tone }) { const styles = { green: "border border-green-500/40 bg-green-500/10 text-green-400", yellow: "border border-yellow-500/40 bg-yellow-500/10 text-yellow-400", red: "border border-red-500/40 bg-red-500/10 text-red-400" }; return <span className={`rounded-full px-3 py-1 text-xs font-semibold ${styles[tone] || styles.red}`}>{label}</span>; }
 function MetricBox({ value, status, compact = false }) { const styles = { good: "border border-green-500/30 bg-green-500/10 text-green-400", avg: "border border-yellow-500/30 bg-yellow-500/10 text-yellow-400", bad: "border border-red-500/30 bg-red-500/10 text-red-400" }; const labels = { good: "Good", avg: "Average", bad: "Poor" }; return <div className={`rounded-xl text-center font-semibold ${styles[status] || styles.bad} ${compact ? "px-2 py-2 text-xs" : "px-3 py-2 text-xs"}`}><div>{value}</div><div className="text-[10px] opacity-80">{labels[status] || "Poor"}</div></div>; }
 function metricStatus(value, type) { if (type === "cap") return value >= 7 ? "good" : value >= 5 ? "avg" : "bad"; if (type === "coc") return value >= 8 ? "good" : value >= 4 ? "avg" : "bad"; if (type === "dscr") return value >= 1.2 ? "good" : value >= 1 ? "avg" : "bad"; if (type === "expense") return value < 35 ? "good" : value <= 45 ? "avg" : "bad"; return "bad"; }
+
+function BrandingPanel({ branding, onChange }) {
+  const update = (key, value) => onChange({ ...branding, [key]: value });
+
+  return (
+    <div className="mb-6 rounded-2xl border border-slate-700 bg-slate-950/70 p-4">
+      <div className="mb-4 text-lg font-semibold">Report Branding</div>
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <BrandingInput label="Agent Name" value={branding.agentName} onChange={(v) => update("agentName", v)} />
+        <BrandingInput label="Company / Brokerage" value={branding.company} onChange={(v) => update("company", v)} />
+        <BrandingInput label="Phone" value={branding.phone} onChange={(v) => update("phone", v)} />
+        <BrandingInput label="Email" value={branding.email} onChange={(v) => update("email", v)} />
+      </div>
+    </div>
+  );
+}
+
+function BrandingInput({ label, value, onChange }) {
+  return (
+    <label>
+      <div className="mb-2 text-xs uppercase tracking-wide text-slate-400">{label}</div>
+      <input value={value || ""} onChange={(e) => onChange(e.target.value)} className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-3 text-white" />
+    </label>
+  );
+}
 
 function AssumptionsPanel({ assumptions, setAssumptions }) { const update = (key, value) => setAssumptions({ ...assumptions, [key]: value }); return <div className="mb-6 rounded-2xl border border-slate-700 bg-slate-950/70 p-4"><div className="mb-4 text-lg font-semibold">Global Assumptions</div><div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4"><AssumptionInput label="Down Payment %" value={assumptions.downPaymentPct} onChange={(v) => update("downPaymentPct", v)} /><label className="block"><div className="mb-2 flex items-start text-xs uppercase tracking-wide text-slate-400"><span>Estimated Financing APR %</span><span className="relative -top-0.5 ml-1 text-[11px] font-bold leading-none text-slate-200">1</span></div><input type="number" inputMode="decimal" enterKeyHint="done" value={assumptions.interestRate} onChange={(e) => update("interestRate", e.target.value === "" ? 0 : Number(e.target.value))} className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-3 text-white" /></label><AssumptionInput label="Property Tax %" value={assumptions.taxRatePct} onChange={(v) => update("taxRatePct", v)} /><AssumptionInput label="Monthly Insurance" value={assumptions.monthlyInsurance} onChange={(v) => update("monthlyInsurance", v)} /><AssumptionInput label="Closing Costs %" value={assumptions.closingCostsPct} onChange={(v) => update("closingCostsPct", v)} /><AssumptionInput label="Rehab Budget" value={assumptions.rehabBudget} onChange={(v) => update("rehabBudget", v)} /><AssumptionInput label="HOA Monthly" value={assumptions.hoaMonthly} onChange={(v) => update("hoaMonthly", v)} /><AssumptionInput label="Maintenance Cost %" value={assumptions.maintenancePct} onChange={(v) => update("maintenancePct", v)} /><AssumptionInput label="Vacancy Per Year %" value={assumptions.vacancyPct} onChange={(v) => update("vacancyPct", v)} /><AssumptionInput label="Management Fee %" value={assumptions.managementPct} onChange={(v) => update("managementPct", v)} /><AssumptionInput label="Single Family Rent" value={assumptions.singleRent} onChange={(v) => update("singleRent", v)} /><AssumptionInput label="Duplex Rent (Per Unit)" value={assumptions.duplexRent} onChange={(v) => update("duplexRent", v)} /><AssumptionInput label="Triplex Rent (Per Unit)" value={assumptions.triplexRent} onChange={(v) => update("triplexRent", v)} /><AssumptionInput label="Quad Rent (Per Unit)" value={assumptions.quadRent} onChange={(v) => update("quadRent", v)} /></div></div>; }
 function AssumptionInput({ label, value, onChange }) { return <label><div className="mb-2 text-xs uppercase tracking-wide text-slate-400">{label}</div><input type="number" inputMode="decimal" enterKeyHint="done" value={value} onChange={(e) => onChange(e.target.value === "" ? 0 : Number(e.target.value))} className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-3" /></label>; }
