@@ -217,10 +217,18 @@ function handlePrintSummary() {
         setImportSummary({ valid: limitedRows.length, invalid: invalidCount, total: allRows.length });
         sessionStorage.setItem(SESSION_KEY, JSON.stringify(limitedRows));
 
-        alert(`${limitedRows.length} properties imported successfully. ${invalidCount > 0 ? `${invalidCount} rows need attention. ` : ""}Next: Fill out Global Assumptions, then press Analyze Batch.`);
+        const skippedForLimit = Math.max(0, validRows.length - limitedRows.length);
+        const limitLabel = isPaid ? "Paid batches" : "Free trial batches";
+        const limitMessage = skippedForLimit > 0
+        ? ` ${limitLabel} support up to ${activeBatchLimit} properties, so ${skippedForLimit} additional valid properties were not imported.`
+        : "";
+	const replacementMessage = rows.length > 0
+        ? " This import replaced the previous batch."
+        : "";
 
-        if (validRows.length > activeBatchLimit) alert(`Only the first ${activeBatchLimit} valid properties were imported for this batch.`);
-      },
+        alert(`${limitedRows.length} properties imported successfully.${limitMessage} ${invalidCount > 0 ? `${invalidCount} rows need attention. ` : ""}Next: Fill out Global Assumptions, then press Analyze Batch.`);
+
+            },
       error: (error) => {
         console.error("CSV parsing error:", error);
         alert("There was a problem reading the CSV file.");
