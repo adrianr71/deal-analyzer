@@ -226,7 +226,7 @@ function handlePrintSummary() {
         ? " This import replaced the previous batch."
         : "";
 
-        alert(`${limitedRows.length} properties imported successfully.${limitMessage} ${invalidCount > 0 ? `${invalidCount} rows need attention. ` : ""}Next: Fill out Global Assumptions, then press Analyze Batch.`);
+        alert(`${limitedRows.length} properties imported successfully.${limitMessage}${replacementMessage} ${invalidCount > 0 ? `${invalidCount} rows need attention. ` : ""}Next: Fill out Global Assumptions, then press Analyze Batch.`);
 
             },
       error: (error) => {
@@ -630,16 +630,16 @@ const brandingHtml = brandingLines.length
 
 .agent-brand {
   text-align: right;
-  font-size: 13px;
+  font-size: 16px;
   line-height: 1.35;
   color: #334155;
-  min-width: 220px;
+  min-width: 260px;
 }
 
 .agent-name {
   font-weight: 700;
   color: #0f172a;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .agent-note {
