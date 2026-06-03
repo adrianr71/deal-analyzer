@@ -630,7 +630,7 @@ const brandingHtml = brandingLines.length
 
 .agent-brand {
   text-align: right;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.35;
   color: #334155;
   min-width: 260px;
@@ -639,7 +639,7 @@ const brandingHtml = brandingLines.length
 .agent-name {
   font-weight: 700;
   color: #0f172a;
-  font-size: 16px;
+  font-size: 15px;
 }
 
 .agent-note {
@@ -698,7 +698,7 @@ const brandingHtml = brandingLines.length
         <div class="brand-row">
   <div>
     <h1>Rental Deal Screener Pro</h1>
-    <div class="subtitle">Branded PDF Property Report</div>
+    <div class="subtitle">Investment Property Analysis Report</div>
   </div>
 <div class="agent-brand">
   ${brandingHtml}
