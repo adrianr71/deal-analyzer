@@ -30,6 +30,12 @@ const SESSION_KEY = "agent_analyzer_session";
 const TRIAL_KEY = "agent_trial_count";
 const BRANDING_KEY = "agent_report_branding";
 const PAID_ACCESS_VALUE = 999;
+const PII_HEADER_TERMS = [
+  "owner", "owner name", "seller", "seller name", "buyer", "buyer name",
+  "client", "client name", "tenant", "tenant name", "email", "e-mail",
+  "phone", "telephone", "mobile", "cell", "ssn", "social security",
+  "tax id", "account number", "private remarks"
+];
 
 const MLS_FIELD_MAP = {
   listingId: [
@@ -200,12 +206,13 @@ function handlePrintSummary() {
         const limitedRows = validRows.slice(0, activeBatchLimit);
         const invalidCount = allRows.length - validRows.length;
         const headers = Object.keys(results.data?.[0] || {});
+        const piiHeaders = detectPiiHeaders(headers);
 
         console.log("CSV headers detected:", headers);
         console.log("CSV import summary:", { totalRows: allRows.length, validRows: validRows.length, invalidRows: invalidCount });
 
         if (limitedRows.length === 0) {
-          setImportSummary({ valid: 0, invalid: invalidCount, total: allRows.length });
+          setImportSummary({ valid: 0, invalid: invalidCount, total: allRows.length, piiWarning: piiHeaders.length > 0 });
           alert("No valid property rows were found. Please check that your CSV includes List Price, Address/MLS #, City, and Type of Property.");
           return;
         }
@@ -214,7 +221,7 @@ function handlePrintSummary() {
         setAnalyzedRows([]);
         setBatchAnalyzed(false);
         setIsProcessing(false);
-        setImportSummary({ valid: limitedRows.length, invalid: invalidCount, total: allRows.length });
+        setImportSummary({ valid: limitedRows.length, invalid: invalidCount, total: allRows.length, piiWarning: piiHeaders.length > 0 });
         sessionStorage.setItem(SESSION_KEY, JSON.stringify(limitedRows));
 
         const skippedForLimit = Math.max(0, validRows.length - limitedRows.length);
@@ -223,10 +230,14 @@ function handlePrintSummary() {
         ? ` ${limitLabel} support up to ${activeBatchLimit} properties, so ${skippedForLimit} additional valid properties were not imported.`
         : "";
 	const replacementMessage = rows.length > 0
-        ? " This import replaced the previous batch."
-        : "";
+	  ? " This import replaced the previous batch."
+	  : "";
 
-        alert(`${limitedRows.length} properties imported successfully.${limitMessage}${replacementMessage} ${invalidCount > 0 ? `${invalidCount} rows need attention. ` : ""}Next: Fill out Global Assumptions, then press Analyze Batch.`);
+	const piiMessage = piiHeaders.length > 0
+	  ? " Potential personal information detected in uploaded file. Only property listing data should be analyzed."
+	  : "";
+
+	alert(`${limitedRows.length} properties imported successfully.${limitMessage}${replacementMessage}${piiMessage} ${invalidCount > 0 ? `${invalidCount} rows need attention. ` : ""}Next: Fill out Global Assumptions, then press 	Analyze Batch.`);
 
             },
       error: (error) => {
@@ -353,7 +364,7 @@ function handlePrintSummary() {
             </label>
           </div>
 
-          {importSummary && <div className="rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-300 print:hidden">{importSummary.valid} properties imported successfully{importSummary.invalid > 0 ? ` • ${importSummary.invalid} rows need attention` : ""}</div>}
+         {importSummary && <div className="rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-300 print:hidden">{importSummary.valid} properties imported successfully{importSummary.invalid > 0 ? ` - ${importSummary.invalid} rows need attention` : ""}{importSummary.piiWarning ? " - Potential personal information detected" : ""}</div>}
         </div>
 
         <AssumptionsPanel assumptions={assumptions} setAssumptions={handleAssumptionsChange} />
@@ -429,6 +440,16 @@ function TableHeader({ children, align = "center" }) { return <th className={`bo
 function BodyCell({ children, align = "center", strong = false, compact = false, className = "" }) { return <td className={`border border-slate-800 ${compact ? "px-1.5" : "px-2"} py-5 align-middle ${align === "left" ? "text-left" : "text-center"} ${strong ? "font-semibold" : ""} ${className}`}>{children}</td>; }
 
 function normalizeHeader(header) { return String(header || "").replace(/^\uFEFF/, "").trim().toLowerCase().replace(/[^a-z0-9]/g, ""); }
+
+function detectPiiHeaders(headers) {
+  return headers.filter((header) => {
+    const normalized = normalizeHeader(header);
+    return PII_HEADER_TERMS.some((term) => normalized.includes(normalizeHeader(term)));
+  });
+}
+
+function findMappedField(headers, aliases) {
+
 function findMappedField(headers, aliases) {
   if (!Array.isArray(aliases) || !Array.isArray(headers)) return null;
 
