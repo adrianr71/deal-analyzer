@@ -109,6 +109,17 @@ export default function Terms() {
               Rental Deal Screener does not guarantee the accuracy,
               completeness, or suitability of uploaded data.
             </p>
+
+	    <p className="mt-3">
+	      Users agree not to upload, process, or store personally identifiable
+	      information (PII) through the platform. The platform is intended solely
+	      for analyzing property listing data and real estate investment metrics.
+	      Users are responsible for ensuring uploaded files comply with applicable
+	      MLS rules, privacy laws, and data-use restrictions.
+	    </p>
+
+
+
           </section>
 
           <section>
