@@ -449,8 +449,6 @@ function detectPiiHeaders(headers) {
 }
 
 function findMappedField(headers, aliases) {
-
-function findMappedField(headers, aliases) {
   if (!Array.isArray(aliases) || !Array.isArray(headers)) return null;
 
   const normalizedHeaders = headers
