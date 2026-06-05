@@ -19,7 +19,18 @@ export default function Privacy() {
               device identifiers, uploaded CSV data, and platform usage
               analytics to improve functionality, security, and user experience.
             </p>
-          </section>
+
+
+	    <h2 className="mb-2 text-xl font-semibold text-white">
+	      Property Data Only
+	    </h2>
+	    <p>
+	      The platform is designed to process property listing information.
+	      Users should not upload personal information. If personal information
+	      is uploaded inadvertently, users should immediately remove the data
+	      and notify support.
+	    </p>
+	   </section>
 
           <section>
             <h2 className="mb-2 text-xl font-semibold text-white">
@@ -61,7 +72,7 @@ export default function Privacy() {
           </section>
 
           <p className="pt-6 text-slate-400">
-            Last updated: 2026
+            Last updated: June 	2026
           </p>
         </div>
       </div>
