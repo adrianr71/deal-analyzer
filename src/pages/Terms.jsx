@@ -7,7 +7,7 @@ export default function Terms() {
         </h1>
 
         <p className="mb-10 text-slate-400">
-          Last Updated: January 2026
+          Last Updated: June 2026
         </p>
 
         <div className="space-y-10 text-sm leading-8">
