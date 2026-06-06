@@ -143,7 +143,25 @@ function handleReportBrandingChange(nextBranding) {
     localStorage.setItem(TRIAL_KEY, String(PAID_ACCESS_VALUE));
     setShowUpgradeModal(false);
   }
+async function startStripeCheckout() {
+  try {
+    const response = await fetch("/api/create-checkout-session", {
+      method: "POST",
+    });
 
+    const data = await response.json();
+
+    if (!response.ok || !data.url) {
+      alert("Unable to start checkout. Please try again.");
+      return;
+    }
+
+    window.location.href = data.url;
+  } catch (error) {
+    console.error("Checkout error:", error);
+    alert("Unable to start checkout. Please try again.");
+  }
+}
   function runFreeTrialBatch() {
     if (isProcessing) return;
     if (batchAnalyzed) {
@@ -300,7 +318,7 @@ function handlePrintSummary() {
 {!isPaid && (
   <div className="mt-5">
     <button
-      onClick={() => setShowUpgradeModal(true)}
+      onClick={startStripeCheckout}
       className="rounded-xl bg-cyan-500 px-6 py-3 text-sm font-semibold text-black transition hover:bg-cyan-400"
     >
       Start Subscription
