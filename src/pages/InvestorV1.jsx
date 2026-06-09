@@ -63,7 +63,7 @@ export default function App() {
               </div>
 
               <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 text-center">
-                <div className="text-2xl font-black text-green-300">8+</div>
+                <div className="text-2xl font-black text-green-300">6</div>
                 <div className="mt-1 text-xs uppercase tracking-wide text-slate-400">Key Metrics</div>
               </div>
 
