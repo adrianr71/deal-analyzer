@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import Papa from "papaparse";
 
 const DEFAULT_ASSUMPTIONS = {
@@ -98,8 +98,10 @@ export default function App() {
   const [remainingTrials, setRemainingTrials] = useState(() => loadRemainingTrials());
   const [importSummary, setImportSummary] = useState(null);
   const [reportBranding, setReportBranding] = useState(() => loadReportBranding());
+  const [isSubscribed, setIsSubscribed] = useState(localStorage.getItem("subscribed") === "true");
+  useEffect(() => {setIsSubscribed(localStorage.getItem("subscribed") === "true");}, []);
 
-  const isPaid = remainingTrials === PAID_ACCESS_VALUE;
+  const isPaid = isSubscribed || remainingTrials === PAID_ACCESS_VALUE;
   const activeBatchLimit = isPaid ? AGENT_BATCH_LIMIT : AGENT_FREE_BATCH_LIMIT;   
   const sortedAnalyzedRows = useMemo(() => sortRows(analyzedRows, sortBy), [analyzedRows, sortBy]);
   const samplePreviewRows = useMemo(() => analyzeRows(SAMPLE_ROWS, assumptions), [assumptions]);

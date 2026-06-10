@@ -24,6 +24,7 @@ export default function App() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/disclaimer" element={<Disclaimer />} />
+        <Route path="/success" element={<AgentV2 />} />
       </Routes>
     </BrowserRouter>
   );
