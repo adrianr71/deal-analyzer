@@ -64,7 +64,7 @@ export default function App() {
 
               <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 text-center">
                 <div className="text-2xl font-black text-green-300">6</div>
-                <div className="mt-1 text-xs uppercase tracking-wide text-slate-400">Key Metrics</div>
+                <div className="mt-1 text-xs uppercase tracking-wide text-slate-400">Professional Metrics</div>
               </div>
 
               <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 text-center">
@@ -117,7 +117,7 @@ export default function App() {
 
           <div className={`mt-8 rounded-2xl border p-5 ${getScoreStyle(displayResult.score)}`}>
             <div className="mb-2 text-sm font-semibold">
-              Deal Score: {displayResult.score.toFixed(1)} / 10 ({getScoreLabel(displayResult.score)})
+              Smart Deal Score: {displayResult.score.toFixed(1)} / 10 ({getScoreLabel(displayResult.score)})
             </div>
             <div className="text-sm opacity-90">
               Based on estimated cap rate, DSCR, vacancy assumptions, management assumptions, maintenance assumptions, and cash flow strength.
