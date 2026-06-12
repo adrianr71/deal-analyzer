@@ -193,6 +193,36 @@ async function startStripeCheckout() {
     alert("Unable to start checkout. Please try again.");
   }
 }
+  async function openCustomerPortal() {
+  const customerId = localStorage.getItem("stripe_customer_id");
+
+  if (!customerId) {
+    alert("Subscription account not found. Please contact support.");
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/create-portal-session", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ customerId }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.url) {
+      alert("Unable to open subscription management. Please try again.");
+      return;
+    }
+
+    window.location.href = data.url;
+  } catch (error) {
+    console.error("Customer portal error:", error);
+    alert("Unable to open subscription management. Please try again.");
+  }
+}
   function runFreeTrialBatch() {
     if (isProcessing) return;
     if (batchAnalyzed) {
@@ -325,10 +355,20 @@ function handlePrintSummary() {
     </div>
   </>
 ) : (
-  <>
-    <div className="inline-flex items-center rounded-full border border-green-400/30 bg-green-500/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-green-300">Professional Subscription Access Active</div>
-    <div className="mt-4 text-xl font-semibold text-green-300">Unlimited Monthly Batch Access</div>
-  </>
+<>
+  <div className="inline-flex items-center rounded-full border border-green-400/30 bg-green-500/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-green-300">Professional Access Active</div>
+  <div className="mt-4 text-xl font-semibold text-green-300">Unlimited Batch Analysis</div>
+  <div className="mt-2 max-w-xl text-sm leading-6 text-slate-400">
+    Renews monthly. Cancel anytime. Access remains active through the end of the billing period.
+  </div>
+  <button
+    type="button"
+    onClick={openCustomerPortal}
+    className="mt-4 rounded-xl border border-green-400/40 bg-green-500/10 px-4 py-2 text-sm font-semibold text-green-200 transition hover:bg-green-500/20"
+  >
+    Manage Subscription
+  </button>
+</>
 )}
 {!isPaid && (
   <>
