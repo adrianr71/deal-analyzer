@@ -99,11 +99,36 @@ export default function App() {
   const [importSummary, setImportSummary] = useState(null);
   const [reportBranding, setReportBranding] = useState(() => loadReportBranding());
   const [isSubscribed, setIsSubscribed] = useState(localStorage.getItem("subscribed") === "true");
-  useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
 
-  if (params.get("checkout") === "success" || params.get("success") === "true") {localStorage.setItem("subscribed", "true");
-    setIsSubscribed(true);window.history.replaceState({}, "", "/agents");}}, []);
+useEffect(() => {
+  async function verifyStripeSuccess() {
+    const params = new URLSearchParams(window.location.search);
+    const checkoutSuccess = params.get("checkout") === "success" || params.get("success") === "true";
+    const sessionId = params.get("session_id");
+
+    if (!checkoutSuccess || !sessionId) return;
+
+    try {
+      const response = await fetch(`/api/verify-checkout-session?session_id=${encodeURIComponent(sessionId)}`);
+      const data = await response.json();
+
+      if (response.ok && data.subscribed) {
+        localStorage.setItem("subscribed", "true");
+        if (data.customerId) localStorage.setItem("stripe_customer_id", data.customerId);
+        if (data.subscriptionId) localStorage.setItem("stripe_subscription_id", data.subscriptionId);
+        setIsSubscribed(true);
+        window.history.replaceState({}, "", "/agents");
+      } else {
+        alert("Stripe checkout could not be verified. Please contact support.");
+      }
+    } catch (error) {
+      console.error("Checkout verification error:", error);
+      alert("Stripe checkout could not be verified. Please contact support.");
+    }
+  }
+
+  verifyStripeSuccess();
+}, []);
 
   const isPaid = isSubscribed || remainingTrials === PAID_ACCESS_VALUE;
   const activeBatchLimit = isPaid ? AGENT_BATCH_LIMIT : AGENT_FREE_BATCH_LIMIT;   
