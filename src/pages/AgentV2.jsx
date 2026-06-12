@@ -99,7 +99,11 @@ export default function App() {
   const [importSummary, setImportSummary] = useState(null);
   const [reportBranding, setReportBranding] = useState(() => loadReportBranding());
   const [isSubscribed, setIsSubscribed] = useState(localStorage.getItem("subscribed") === "true");
-  useEffect(() => {setIsSubscribed(localStorage.getItem("subscribed") === "true");}, []);
+  useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+
+  if (params.get("checkout") === "success" || params.get("success") === "true") {localStorage.setItem("subscribed", "true");
+    setIsSubscribed(true);window.history.replaceState({}, "", "/agents");}}, []);
 
   const isPaid = isSubscribed || remainingTrials === PAID_ACCESS_VALUE;
   const activeBatchLimit = isPaid ? AGENT_BATCH_LIMIT : AGENT_FREE_BATCH_LIMIT;   
