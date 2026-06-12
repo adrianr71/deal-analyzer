@@ -361,13 +361,19 @@ function handlePrintSummary() {
   <div className="mt-2 max-w-xl text-sm leading-6 text-slate-400">
     Renews monthly. Cancel anytime. Access remains active through the end of the billing period.
   </div>
-  <button
-    type="button"
-    onClick={openCustomerPortal}
-    className="mt-4 rounded-xl border border-green-400/40 bg-green-500/10 px-4 py-2 text-sm font-semibold text-green-200 transition hover:bg-green-500/20"
-  >
-    Manage Subscription
-  </button>
+  {localStorage.getItem("stripe_customer_id") ? (
+    <button
+      type="button"
+      onClick={openCustomerPortal}
+      className="mt-4 rounded-xl border border-green-400/40 bg-green-500/10 px-4 py-2 text-sm font-semibold text-green-200 transition hover:bg-green-500/20"
+    >
+      Manage Subscription
+    </button>
+  ) : (
+    <div className="mt-4 text-xs text-slate-500">
+      Developer access active
+    </div>
+  )}
 </>
 )}
 {!isPaid && (
