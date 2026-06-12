@@ -3,47 +3,36 @@ import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
-  if (req.method !== "GET") {
+  if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    const sessionId = req.query.session_id;
+    const origin =
+      req.headers.origin ||
+      (process.env.VERCEL_URL && `https://${process.env.VERCEL_URL}`) ||
+      "https://www.rentaldealscreener.pro";
 
-    if (!sessionId) {
-      return res.status(400).json({ error: "Missing checkout session ID" });
-    }
-
-    const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ["subscription", "customer"],
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price: process.env.STRIPE_PRICE_ID,
+          quantity: 1,
+        },
+      ],
+      billing_address_collection: "auto",
+      allow_promotion_codes: true,
+      success_url: `${origin}/agents?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/agents?checkout=cancel`,
     });
 
-    const subscription = session.subscription;
-    const status =
-      typeof subscription === "object" && subscription
-        ? subscription.status
-        : "unknown";
-
-    const subscribed =
-      session.payment_status === "paid" &&
-      (status === "active" || status === "trialing");
-
-    return res.status(200).json({
-      subscribed,
-      status,
-      customerId:
-        typeof session.customer === "object" && session.customer
-          ? session.customer.id
-          : session.customer,
-      subscriptionId:
-        typeof subscription === "object" && subscription
-          ? subscription.id
-          : subscription,
-    });
+    return res.status(200).json({ url: session.url });
   } catch (error) {
-    console.error("Verify checkout session error:", error);
+    console.error("Stripe checkout session error:", error);
     return res.status(500).json({
-      error: "Unable to verify checkout session",
+      error: "Unable to create checkout session",
     });
   }
 }
