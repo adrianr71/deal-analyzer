@@ -84,7 +84,11 @@ export default async function handler(req, res) {
       event.type === "customer.subscription.updated" ||
       event.type === "customer.subscription.deleted"
     ) {
-      await saveSubscription(event.data.object, event.id);
+      const subscription = await stripe.subscriptions.retrieve(event.data.object.id, {
+        expand: ["customer", "items.data.price"],
+      });
+
+      await saveSubscription(subscription, event.id);
     }
 
     return res.status(200).json({ received: true });
