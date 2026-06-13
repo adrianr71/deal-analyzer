@@ -2,6 +2,32 @@ import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+async function getCustomerEmail(customer) {
+  const customerId =
+    typeof customer === "string"
+      ? customer
+      : customer?.id;
+
+  if (!customerId) return null;
+
+  if (typeof customer === "object" && customer?.email) {
+    return customer.email;
+  }
+
+  try {
+    const retrievedCustomer = await stripe.customers.retrieve(customerId);
+
+    if (!retrievedCustomer || retrievedCustomer.deleted) {
+      return null;
+    }
+
+    return retrievedCustomer.email || null;
+  } catch (error) {
+    console.error("Stripe customer email lookup failed:", error);
+    return null;
+  }
+}
+
 async function saveSubscription(subscription, eventId) {
   const customerId =
     typeof subscription.customer === "string"
@@ -9,8 +35,10 @@ async function saveSubscription(subscription, eventId) {
       : subscription.customer?.id;
 
   const priceId = subscription.items?.data?.[0]?.price?.id || null;
+  const email = await getCustomerEmail(subscription.customer);
 
   const body = {
+    email,
     stripe_customer_id: customerId,
     stripe_subscription_id: subscription.id,
     stripe_price_id: priceId,
