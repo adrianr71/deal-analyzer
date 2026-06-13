@@ -60,8 +60,11 @@ export default async function handler(req, res) {
     }
 
     return res.status(200).json({ received: true });
-  } catch (error) {
-    console.error("Stripe webhook error:", error);
-    return res.status(500).json({ error: "Webhook failed" });
-  }
+} catch (error) {
+  console.error("Stripe webhook error:", error);
+  return res.status(500).json({
+    error: "Webhook failed",
+    message: error.message,
+  });
+}
 }
