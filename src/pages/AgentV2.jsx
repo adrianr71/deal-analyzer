@@ -130,6 +130,36 @@ useEffect(() => {
   verifyStripeSuccess();
 }, []);
 
+useEffect(() => {
+  async function checkSavedSubscription() {
+    const customerId = localStorage.getItem("stripe_customer_id");
+    const subscriptionId = localStorage.getItem("stripe_subscription_id");
+
+    if (!customerId && !subscriptionId) return;
+
+    try {
+      const query = customerId
+        ? `customer_id=${encodeURIComponent(customerId)}`
+        : `subscription_id=${encodeURIComponent(subscriptionId)}`;
+
+      const response = await fetch(`/api/get-subscription-status?${query}`);
+      const data = await response.json();
+
+      if (response.ok && data.subscribed) {
+        localStorage.setItem("subscribed", "true");
+        setIsSubscribed(true);
+      } else {
+        localStorage.removeItem("subscribed");
+        setIsSubscribed(false);
+      }
+    } catch (error) {
+      console.error("Saved subscription check failed:", error);
+    }
+  }
+
+  checkSavedSubscription();
+}, []);
+
   const isPaid = isSubscribed || remainingTrials === PAID_ACCESS_VALUE;
   const activeBatchLimit = isPaid ? AGENT_BATCH_LIMIT : AGENT_FREE_BATCH_LIMIT;   
   const sortedAnalyzedRows = useMemo(() => sortRows(analyzedRows, sortBy), [analyzedRows, sortBy]);
