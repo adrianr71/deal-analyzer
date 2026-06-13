@@ -24,14 +24,14 @@ async function saveSubscription(subscription, eventId) {
   };
 
   const response = await fetch(
-    `${process.env.VITE_SUPABASE_URL}/rest/v1/subscriptions`,
+      `${process.env.VITE_SUPABASE_URL}/rest/v1/subscriptions?on_conflict=stripe_subscription_id`,
     {
       method: "POST",
       headers: {
         apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
         Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
         "Content-Type": "application/json",
-        Prefer: "resolution=merge-duplicates",
+        Prefer: "resolution=merge-duplicates,return=minimal",
       },
       body: JSON.stringify(body),
     }
