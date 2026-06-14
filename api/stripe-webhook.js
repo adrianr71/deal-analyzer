@@ -37,22 +37,33 @@ async function saveSubscription(subscription, eventId) {
   const priceId = subscription.items?.data?.[0]?.price?.id || null;
   const email = await getCustomerEmail(subscription.customer);
 
+  const periodEnd =
+   subscription.current_period_end ||
+   subscription.items?.data?.[0]?.current_period_end ||
+   subscription.cancel_at ||
+   null;
+
+  const isCancelingAtPeriodEnd =
+   subscription.cancel_at_period_end === true ||
+   Boolean(subscription.cancel_at);
+
   const body = {
     email,
     stripe_customer_id: customerId,
     stripe_subscription_id: subscription.id,
     stripe_price_id: priceId,
     status: subscription.status,
-    current_period_end: subscription.current_period_end
-      ? new Date(subscription.current_period_end * 1000).toISOString()
-      : null,
-    cancel_at_period_end: Boolean(subscription.cancel_at_period_end),
-    last_event_id: eventId,
-    updated_at: new Date().toISOString(),
+  current_period_end: periodEnd
+    ? new Date(periodEnd * 1000).toISOString()
+    : null,
+  cancel_at_period_end: isCancelingAtPeriodEnd,
+  last_event_id: eventId,
+  updated_at: new Date().toISOString(),
   };
+  const supabaseUrl = String(process.env.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
 
   const response = await fetch(
-      `${process.env.VITE_SUPABASE_URL}/rest/v1/subscriptions?on_conflict=stripe_subscription_id`,
+   `${supabaseUrl}/rest/v1/subscriptions?on_conflict=stripe_subscription_id`,
     {
       method: "POST",
       headers: {
