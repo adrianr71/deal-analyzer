@@ -515,8 +515,10 @@ function handlePrintSummary() {
 function loadSavedRows() { try { const saved = sessionStorage.getItem(SESSION_KEY); const parsed = saved ? JSON.parse(saved) : []; return Array.isArray(parsed) ? parsed : []; } catch { return []; } }
 function loadRemainingTrials() { try { const saved = localStorage.getItem(TRIAL_KEY); return saved ? Number(saved) : AGENT_FREE_TRIALS; } catch { return AGENT_FREE_TRIALS; } }
 function loadReportBranding() { try { const saved = localStorage.getItem(BRANDING_KEY); return saved ? JSON.parse(saved) : { agentName: "", company: "", phone: "", email: "" }; } catch { return { agentName: "", company: "", phone: "", email: "" }; } }
-function analyzeRows(rows, assumptions, taxOverrides) { return rows.map((row, index) => analyzeRow(row, assumptions, index, taxOverrides)
-  );
+function analyzeRows(rows, assumptions, taxOverrides) {
+  return rows.map((row, index) => {
+    return analyzeRow(row, assumptions, index, taxOverrides);
+  });
 }
 const getMonthlyTax = (row, index, assumptions, taxOverrides) => {
   const price = Number(row.price || 0);
@@ -540,7 +542,7 @@ function analyzeRow(row, assumptions, index, taxOverrides) {
   const monthlyRate = assumptions.interestRate / 100 / 12;
   const numberOfPayments = assumptions.loanTermYears * 12;
   const debtService = monthlyRate === 0 ? loanAmount / numberOfPayments : (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
-  const monthlyTaxes = getMonthlyTax(row, row.index, assumptions, taxOverrides);
+  const monthlyTaxes = getMonthlyTax(row, index, assumptions, taxOverrides);
   const operatingExpenses = monthlyTaxes + assumptions.monthlyInsurance + monthlyRent * (assumptions.maintenancePct / 100) + monthlyRent * (assumptions.vacancyPct / 100) + monthlyRent * (assumptions.managementPct / 100) + assumptions.hoaMonthly;
   const noiMonthly = monthlyRent - operatingExpenses;
   const noiAnnual = noiMonthly * 12;
