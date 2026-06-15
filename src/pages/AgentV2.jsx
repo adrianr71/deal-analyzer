@@ -516,14 +516,22 @@ function loadSavedRows() { try { const saved = sessionStorage.getItem(SESSION_KE
 function loadRemainingTrials() { try { const saved = localStorage.getItem(TRIAL_KEY); return saved ? Number(saved) : AGENT_FREE_TRIALS; } catch { return AGENT_FREE_TRIALS; } }
 function loadReportBranding() { try { const saved = localStorage.getItem(BRANDING_KEY); return saved ? JSON.parse(saved) : { agentName: "", company: "", phone: "", email: "" }; } catch { return { agentName: "", company: "", phone: "", email: "" }; } }
 function analyzeRows(rows, assumptions, taxOverrides) {
+  const safeOverrides = taxOverrides || {};
+
   return rows.map((row, index) => {
-    return analyzeRow(row, assumptions, index, taxOverrides);
+    return analyzeRow(row, assumptions, index, safeOverrides);
   });
 }
 const getMonthlyTax = (row, index, assumptions, taxOverrides) => {
-  const price = Number(row.price || 0);
+  const price = Number(row && row.price ? row.price : 0);
 
-  if (taxOverrides[index] !== undefined) {
+  // SAFETY FIX
+  if (!taxOverrides || typeof taxOverrides !== "object") {
+    const annualTax = price * (assumptions.taxRatePct / 100);
+    return annualTax / 12;
+  }
+
+  if (index !== undefined && taxOverrides[index] !== undefined) {
     return Number(taxOverrides[index]);
   }
 
