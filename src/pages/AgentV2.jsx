@@ -504,7 +504,7 @@ function handlePrintSummary() {
         <div id="results-print-report"><ResultsTable
   isProcessing={isProcessing}
   rows={analyzedRows}
-  onUpdateRent={onUpdateRent}
+  onUpdateRent={updateRowRent}
   taxOverrides={taxOverrides}
   setTaxOverrides={setTaxOverrides}
 /></div>
@@ -593,7 +593,7 @@ function ResultsTable({
     taxOverrides={taxOverrides}
     setTaxOverrides={setTaxOverrides}
     isSample={showSample}
-    onUpdateRent={onUpdateRent}
+    onUpdateRent={updateRowRent}
   />
 ))}</tbody></table></div></div>;
 }
