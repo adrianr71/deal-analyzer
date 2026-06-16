@@ -504,7 +504,6 @@ function handlePrintSummary() {
         <div id="results-print-report"><ResultsTable
   isProcessing={isProcessing}
   rows={analyzedRows}
-  sampleRows={sampleRows}
   onUpdateRent={onUpdateRent}
   taxOverrides={taxOverrides}
   setTaxOverrides={setTaxOverrides}
@@ -580,7 +579,6 @@ function sortRows(rows, sortBy) { return [...rows].sort((a, b) => sortBy === "sc
 function ResultsTable({
   isProcessing,
   rows,
-  sampleRows,
   onUpdateRent,
   taxOverrides,
   setTaxOverrides
