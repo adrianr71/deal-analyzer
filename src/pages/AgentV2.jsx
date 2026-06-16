@@ -499,7 +499,7 @@ function handlePrintSummary() {
         <div className="mb-6 flex flex-wrap items-center gap-3 print:hidden"><button onClick={runFreeTrialBatch} disabled={isProcessing || batchAnalyzed} className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition ${isProcessing || batchAnalyzed ? "cursor-not-allowed border border-slate-700 bg-slate-800 text-slate-500" : "border border-white/70 bg-white text-slate-950 hover:bg-cyan-100"}`}>{isProcessing ? "Analyzing Batch..." : batchAnalyzed ? "Batch Already Analyzed" : isPaid ? "Analyze All Properties" : `Click Here to Analyze All Properties • ${remainingTrials} Free Batches Remaining`}</button><div className="text-sm font-medium text-slate-300">Sort Results By:</div><select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white"><option value="score">Highest Score</option><option value="cashFlow">Highest Cash Flow</option><option value="price">Lowest Price</option></select></div>
 
         <div className="print-summary">
-  <PrintSummary rows={sortedAnalyzedRows} assumptions={assumptions} />
+  {/* <PrintSummary rows={sortedAnalyzedRows} assumptions={assumptions} /> */}
 </div>
         <div id="results-print-report"><ResultsTable
   isProcessing={isProcessing}
