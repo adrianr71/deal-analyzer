@@ -501,7 +501,14 @@ function handlePrintSummary() {
         <div className="print-summary">
   <PrintSummary rows={sortedAnalyzedRows} assumptions={assumptions} />
 </div>
-        <div id="results-print-report"><ResultsTable isProcessing={isProcessing} rows={sortedAnalyzedRows} sampleRows={samplePreviewRows} onUpdateRent={updateRowRent} /></div>
+        <div id="results-print-report"><ResultsTable
+  isProcessing={isProcessing}
+  rows={analyzedRows}
+  sampleRows={sampleRows}
+  onUpdateRent={onUpdateRent}
+  taxOverrides={taxOverrides}
+  setTaxOverrides={setTaxOverrides}
+/></div>
         <div className="mt-6 mb-6 flex flex-wrap items-center gap-3 print:hidden"><button onClick={handleExportCSV} disabled={sortedAnalyzedRows.length === 0} className="rounded-xl border border-green-500/40 bg-green-500/10 px-4 py-2 text-sm text-green-300 transition hover:bg-green-500/20 disabled:cursor-not-allowed disabled:opacity-40">Download CSV Report</button><button onClick={handlePrintSummary} disabled={sortedAnalyzedRows.length === 0} className="rounded-xl border border-slate-500/40 bg-slate-500/10 px-4 py-2 text-sm text-slate-200 transition hover:bg-slate-500/20 disabled:cursor-not-allowed disabled:opacity-40">Create Branded PDF Report</button></div>
         <div className="print:hidden"><MathLogicNote onDeveloperUnlock={activateDeveloperAccess} /></div>
         <footer className="mt-12 border-t border-slate-800 pt-6 text-center text-xs text-slate-400"><div className="flex flex-wrap justify-center gap-4"><button onClick={() => setActiveLegalModal("contact")} className="transition hover:text-white">Contact</button><button onClick={() => setActiveLegalModal("support")} className="transition hover:text-white">Support</button><a href="/terms" className="transition hover:text-white">Terms</a><a href="/privacy" className="transition hover:text-white">Privacy</a><a href="/disclaimer" className="transition hover:text-white">Disclaimer</a></div><div className="mt-3">© 2026 RentalDealScreener.pro · Operated by Caribmare LLC</div></footer>
@@ -570,7 +577,14 @@ function analyzeRow(row, assumptions, index, taxOverrides) {
 
 function sortRows(rows, sortBy) { return [...rows].sort((a, b) => sortBy === "score" ? b.score - a.score : sortBy === "cashFlow" ? b.monthlyCashFlow - a.monthlyCashFlow : sortBy === "price" ? a.price - b.price : 0); }
 
-function ResultsTable({ isProcessing, rows, sampleRows, onUpdateRent }) {
+function ResultsTable({
+  isProcessing,
+  rows,
+  sampleRows,
+  onUpdateRent,
+  taxOverrides,
+  setTaxOverrides
+}) {
   const showSample = !isProcessing && rows.length === 0;
   const visibleRows = showSample ? sampleRows : rows;
   return <div className="overflow-hidden rounded-2xl border border-slate-700 bg-slate-950/90 shadow-2xl print:hidden"><div className="overflow-x-auto"><table className="w-full min-w-[1250px] border-collapse text-sm"><colgroup><col className="w-[115px]" /><col className="w-[70px]" /><col className="w-[105px]" /><col /><col className="w-[95px]" /><col className="w-[100px]" /><col className="w-[110px]" /><col className="w-[82px]" /><col className="w-[108px]" /><col className="w-[88px]" /><col className="w-[84px]" /><col className="w-[84px]" /><col className="w-[102px]" /></colgroup><thead className="bg-slate-950"><tr className="text-slate-200"><TableHeader>RATING</TableHeader><TableHeader>SCORE</TableHeader><TableHeader>PROPERTY<br />TYPE</TableHeader><TableHeader align="left">ADDRESS</TableHeader><TableHeader>CITY</TableHeader><TableHeader>PRICE</TableHeader><TableHeader>RENT</TableHeader><TableHeader>MONTHLY PROPERTY TAX</TableHeader><TableHeader>NOI<span className="ml-0.5 align-super text-sm font-bold text-slate-300">2</span></TableHeader><TableHeader>MONTHLY<br />CASH FLOW<span className="ml-0.5 align-super text-sm font-bold text-slate-300">3</span></TableHeader><TableHeader>CAP RATE<span className="ml-0.5 align-super text-sm font-bold text-slate-300">4</span></TableHeader><TableHeader>COC<span className="ml-0.5 align-super text-sm font-bold text-slate-300">5</span></TableHeader><TableHeader>DSCR<span className="ml-0.5 align-super text-sm font-bold text-slate-300">6</span></TableHeader><TableHeader>EXPENSE<br />RATIO<span className="ml-0.5 align-super text-sm font-bold text-slate-300">7</span></TableHeader></tr></thead><tbody>{isProcessing ? <tr><td colSpan={13} className="h-32 border border-slate-800 text-center text-sm text-blue-300">Processing professional deal scoring model...</td></tr> : visibleRows.map((row, index) => (
