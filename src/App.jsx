@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useEffect } from "react"; // 👈 ADD THIS
 
 import Home from "./pages/Home";
 import InvestorV1 from "./pages/InvestorV1";
@@ -10,18 +9,10 @@ import Privacy from "./pages/Privacy";
 import Disclaimer from "./pages/Disclaimer";
 
 export default function App() {
-
-useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("success") === "true") {
-    localStorage.setItem("subscribed", "true");
-  }
-}, []);
-
   return (
     <BrowserRouter>
       <Routes>
-	<Route path="/" element={<Home />} />
+        <Route path="/" element={<Home />} />
         <Route path="/investors" element={<InvestorV1 />} />
         <Route path="/agents" element={<AgentV2 />} />
         <Route path="/terms" element={<Terms />} />
@@ -32,4 +23,3 @@ useEffect(() => {
     </BrowserRouter>
   );
 }
-
