@@ -597,7 +597,8 @@ function ResultsTable({
     isSample={showSample}
     onUpdateRent={updateRowRent}
   />
-))}</tbody></table></div></div>;
+ ))
+)}</tbody></table></div></div>;
 }
 
 function ResultRow({ row, index, taxOverrides, setTaxOverrides, isSample, onUpdateRent }) {
