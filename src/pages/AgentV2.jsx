@@ -505,7 +505,7 @@ function handlePrintSummary() {
   isProcessing={isProcessing}
   rows={analyzedRows}
   sampleRows={samplePreviewRows}
-  onUpdateRent={updateRowRent}
+  onUpdateRent={onUpdateRent}
   taxOverrides={taxOverrides}
   setTaxOverrides={setTaxOverrides}
 /></div>
