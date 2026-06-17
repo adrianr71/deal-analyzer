@@ -580,6 +580,7 @@ function sortRows(rows, sortBy) { return [...rows].sort((a, b) => sortBy === "sc
 function ResultsTable({
   isProcessing,
   rows,
+  sampleRows = [],
   onUpdateRent,
   taxOverrides,
   setTaxOverrides
