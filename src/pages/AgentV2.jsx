@@ -501,7 +501,8 @@ function handlePrintSummary() {
         <div className="print-summary">
   {/* <PrintSummary rows={sortedAnalyzedRows} assumptions={assumptions} /> */}
 </div>
-        <div id="results-print-report"><ResultsTable
+        <div id="results-print-report">
+<ResultsTable
   isProcessing={isProcessing}
   rows={analyzedRows}
   sampleRows={samplePreviewRows}
