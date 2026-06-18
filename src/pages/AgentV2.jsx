@@ -595,7 +595,7 @@ function ResultsTable({
     taxOverrides={taxOverrides}
     setTaxOverrides={setTaxOverrides}
     isSample={showSample}
-    onUpdateRent={updateRowRent}
+    onUpdateRent={onUpdateRent}
   />
  ))
 )}</tbody></table></div></div>;
