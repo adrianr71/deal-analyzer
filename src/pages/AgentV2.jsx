@@ -574,7 +574,7 @@ function analyzeRow(row, assumptions, index, taxOverrides) {
   const score = calculateDealScore({ monthlyCashFlow, capRate, cashOnCash, dscr, noiAnnual, expenseRatio });
   const rating = score >= 85 ? "Excellent" : score >= 70 ? "Strong" : score >= 55 ? "Moderate" : score >= 40 ? "Weak" : "High Risk";
   const tone = score >= 85 ? "green" : score >= 55 ? "yellow" : "red";
-  return { ...row, units, propertyType: normalized.propertyType, monthlyRent, operatingExpenses, expenseRatio, noiMonthly, monthlyCashFlow, capRate, cashOnCash, dscr, score, rating, tone };
+  return { ...row, units, propertyType: normalized.propertyType, monthlyRent, monthlyTaxes, monthlyPropertyTax: monthlyTaxes, operatingExpenses, expenseRatio, noiMonthly, monthlyCashFlow, capRate, cashOnCash, dscr, score, rating, tone };
 }
 
 function sortRows(rows, sortBy) { return [...rows].sort((a, b) => sortBy === "score" ? b.score - a.score : sortBy === "cashFlow" ? b.monthlyCashFlow - a.monthlyCashFlow : sortBy === "price" ? a.price - b.price : 0); }
@@ -610,7 +610,7 @@ function ResultRow({ row, index, taxOverrides, setTaxOverrides, isSample, onUpda
     value={
   taxOverrides[index] !== undefined
     ? taxOverrides[index]
-    : Math.round(row.monthlyTaxes || 0)
+    : Math.round(row.monthlyPropertyTax ?? row.monthlyTaxes ?? 0)
 }
     onChange={(e) =>
       setTaxOverrides((prev) => ({
