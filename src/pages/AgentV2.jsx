@@ -504,7 +504,7 @@ function handlePrintSummary() {
         <div id="results-print-report">
 <ResultsTable
   isProcessing={isProcessing}
-  rows={analyzedRows}
+  rows={sortedAnalyzedRows}
   sampleRows={samplePreviewRows}
   onUpdateRent={updateRowRent}
   taxOverrides={taxOverrides}
