@@ -254,39 +254,68 @@ async function startStripeCheckout() {
     alert("Unable to open subscription management. Please try again.");
   }
 }
-  function runFreeTrialBatch() {
-    if (isProcessing) return;
-    if (batchAnalyzed) {
-      alert("This batch has already been analyzed. Start the next batch before running another analysis.");
-      return;
-    }
-    if (!isPaid && remainingTrials <= 0) {
-      setShowUpgradeModal(true);
-      return;
-    }
-    if (rows.length === 0) {
-      alert("Please import a CSV file before analyzing a batch.");
-      return;
-    }
-    if (rows.length > AGENT_BATCH_LIMIT) {
-      alert(`Each batch supports up to ${AGENT_BATCH_LIMIT} properties.`);
+async function runFreeTrialBatch() {
+  if (isProcessing) return;
+  if (batchAnalyzed) {
+    alert("This batch has already been analyzed. Start the next batch before running another analysis.");
+    return;
+  }
+  if (!isPaid && remainingTrials <= 0) {
+    setShowUpgradeModal(true);
+    return;
+  }
+  if (rows.length === 0) {
+    alert("Please import a CSV file before analyzing a batch.");
+    return;
+  }
+  if (rows.length > AGENT_BATCH_LIMIT) {
+    alert(`Each batch supports up to ${AGENT_BATCH_LIMIT} properties.`);
+    return;
+  }
+
+  setIsProcessing(true);
+
+  try {
+    const customerId = localStorage.getItem("stripe_customer_id");
+    const subscriptionId = localStorage.getItem("stripe_subscription_id");
+
+    const response = await fetch("/api/analyze-batch", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        rows,
+        assumptions,
+        taxOverrides,
+        customerId,
+        subscriptionId,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.error || "Unable to analyze batch.");
       return;
     }
 
-    setIsProcessing(true);
-    window.setTimeout(() => {
-      const analyzed = analyzeRows(rows, assumptions, taxOverrides);
-      setAnalyzedRows(analyzed);
-      setBatchAnalyzed(true);
-      logCalculateEvent(rows);
-      if (!isPaid) {
-        const updatedTrials = Math.max(0, remainingTrials - 1);
-        setRemainingTrials(updatedTrials);
-        localStorage.setItem(TRIAL_KEY, String(updatedTrials));
-      }
-      setIsProcessing(false);
-    }, 120);
+    setAnalyzedRows(data.analyzed);
+    setBatchAnalyzed(true);
+    logCalculateEvent(rows);
+
+    if (!data.isSubscribed) {
+      const updatedTrials = Math.max(0, remainingTrials - 1);
+      setRemainingTrials(updatedTrials);
+      localStorage.setItem(TRIAL_KEY, String(updatedTrials));
+    }
+  } catch (error) {
+    console.error("Analyze batch request failed:", error);
+    alert("Unable to analyze batch.");
+  } finally {
+    setIsProcessing(false);
   }
+}
 
   function handleExportCSV() {
     exportAgentCSV(sortedAnalyzedRows);
