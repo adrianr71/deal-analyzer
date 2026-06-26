@@ -165,6 +165,7 @@ try {
 } finally {
   setSubscriptionChecked(true);
 }
+}
 
   checkSavedSubscription();
 }, []);
