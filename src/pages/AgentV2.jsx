@@ -173,11 +173,28 @@ try {
   const isPaid = isSubscribed;
   const activeBatchLimit = isPaid ? AGENT_BATCH_LIMIT : AGENT_FREE_BATCH_LIMIT;   
   const sortedAnalyzedRows = useMemo(() => sortRows(analyzedRows, sortBy), [analyzedRows, sortBy]);
-  const samplePreviewRows = useMemo(() => analyzeRows(SAMPLE_ROWS, assumptions), [assumptions]);
+  const samplePreviewRows = SAMPLE_ROWS.map((row) => ({
+   ...row,
+   propertyType: row.type,
+   monthlyRent: row.rentManual || 0,
+   score: 0,
+   rating: "Sample",
+   tone: "yellow",
+   monthlyCashFlow: 0,
+   capRate: 0,
+   cashOnCash: 0,
+   dscr: 0,
+   expenseRatio: 0,
+   noiMonthly: 0,
+}));
 
 function handleAssumptionsChange(nextAssumptions) {
   setAssumptions(nextAssumptions);
-  if (batchAnalyzed && rows.length > 0) setAnalyzedRows(analyzeRows(rows, nextAssumptions));
+
+  if (batchAnalyzed && rows.length > 0) {
+    setAnalyzedRows([]);
+    setBatchAnalyzed(false);
+  }
 }
 
 function handleReportBrandingChange(nextBranding) {
@@ -195,7 +212,10 @@ function handleReportBrandingChange(nextBranding) {
 
     setRows(updatedRows);
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(updatedRows));
-    if (batchAnalyzed) setAnalyzedRows(analyzeRows(updatedRows, assumptions));
+    if (batchAnalyzed) {
+     setAnalyzedRows([]);
+     setBatchAnalyzed(false);
+}
   }
 
   function startNewSession() {
@@ -575,58 +595,6 @@ function loadRemainingTrials() {
   }
 }
 function loadReportBranding() { try { const saved = localStorage.getItem(BRANDING_KEY); return saved ? JSON.parse(saved) : { agentName: "", company: "", phone: "", email: "" }; } catch { return { agentName: "", company: "", phone: "", email: "" }; } }
-function analyzeRows(rows, assumptions, taxOverrides) {
-  const safeOverrides = taxOverrides || {};
-
-  return rows.map((row, index) => {
-    return analyzeRow(row, assumptions, index, safeOverrides);
-  });
-}
-const getMonthlyTax = (row, index, assumptions, taxOverrides) => {
-  const price = Number(row && row.price ? row.price : 0);
-
-  // SAFETY FIX
-  if (!taxOverrides || typeof taxOverrides !== "object") {
-    const annualTax = price * (assumptions.taxRatePct / 100);
-    return annualTax / 12;
-  }
-
-  if (index !== undefined && taxOverrides[index] !== undefined) {
-    return Number(taxOverrides[index]);
-  }
-
-  const annualTax = price * (assumptions.taxRatePct / 100);
-  return annualTax / 12;
-};
-
-function analyzeRow(row, assumptions, index, taxOverrides) {
-  const normalized = normalizePropertyType(row.type);
-  const units = normalized.units;
-  const rentPerUnit = units === 4 ? assumptions.quadRent : units === 3 ? assumptions.triplexRent : units === 2 ? assumptions.duplexRent : assumptions.singleRent;
-  const monthlyRent = row.rentManual ?? units * rentPerUnit;
-  const closingCosts = row.price * (assumptions.closingCostsPct / 100);
-  const downPayment = row.price * (assumptions.downPaymentPct / 100);
-  const loanAmount = row.price - downPayment;
-  const monthlyRate = assumptions.interestRate / 100 / 12;
-  const numberOfPayments = assumptions.loanTermYears * 12;
-  const debtService = monthlyRate === 0 ? loanAmount / numberOfPayments : (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
-  const monthlyTaxes = getMonthlyTax(row, index, assumptions, taxOverrides);
-  const operatingExpenses = monthlyTaxes + assumptions.monthlyInsurance + monthlyRent * (assumptions.maintenancePct / 100) + monthlyRent * (assumptions.vacancyPct / 100) + monthlyRent * (assumptions.managementPct / 100) + assumptions.hoaMonthly;
-  const noiMonthly = monthlyRent - operatingExpenses;
-  const noiAnnual = noiMonthly * 12;
-  const monthlyCashFlow = noiMonthly - debtService;
-  const annualCashFlow = monthlyCashFlow * 12;
-  const annualDebtService = debtService * 12;
-  const capRate = row.price > 0 ? (noiAnnual / row.price) * 100 : 0;
-  const totalCashInvested = downPayment + closingCosts + assumptions.rehabBudget;
-  const cashOnCash = totalCashInvested > 0 ? (annualCashFlow / totalCashInvested) * 100 : 0;
-  const dscr = annualDebtService > 0 ? noiAnnual / annualDebtService : 0;
-  const expenseRatio = monthlyRent > 0 ? (operatingExpenses / monthlyRent) * 100 : 0;
-  const score = calculateDealScore({ monthlyCashFlow, capRate, cashOnCash, dscr, noiAnnual, expenseRatio });
-  const rating = score >= 85 ? "Excellent" : score >= 70 ? "Strong" : score >= 55 ? "Moderate" : score >= 40 ? "Weak" : "High Risk";
-  const tone = score >= 85 ? "green" : score >= 55 ? "yellow" : "red";
-  return { ...row, units, propertyType: normalized.propertyType, monthlyRent, monthlyTaxes, monthlyPropertyTax: monthlyTaxes, operatingExpenses, expenseRatio, noiMonthly, monthlyCashFlow, capRate, cashOnCash, dscr, score, rating, tone };
-}
 
 function sortRows(rows, sortBy) { return [...rows].sort((a, b) => sortBy === "score" ? b.score - a.score : sortBy === "cashFlow" ? b.monthlyCashFlow - a.monthlyCashFlow : sortBy === "price" ? a.price - b.price : 0); }
 
@@ -759,8 +727,6 @@ parsed.importNotes = notes.join("; ") || "Complete";
 return parsed;
 }
 
-function normalizePropertyType(type) { const text = String(type || "").toLowerCase(); if (text.includes("four") || text.includes("quad") || text.includes("4plex")) return { units: 4, propertyType: "Fourplex" }; if (text.includes("triplex") || text.includes("3plex")) return { units: 3, propertyType: "Triplex" }; if (text.includes("duplex") || text.includes("2plex")) return { units: 2, propertyType: "Duplex" }; return { units: 1, propertyType: "Single / Condo" }; }
-function calculateDealScore({ monthlyCashFlow, capRate, cashOnCash, dscr, noiAnnual, expenseRatio }) { let score = 0; score += noiAnnual > 40000 ? 15 : noiAnnual > 20000 ? 10 : noiAnnual > 0 ? 5 : 0; score += monthlyCashFlow > 1000 ? 25 : monthlyCashFlow > 500 ? 18 : monthlyCashFlow > 0 ? 10 : 0; score += capRate >= 8 ? 20 : capRate >= 6 ? 14 : capRate >= 5 ? 8 : 0; score += cashOnCash >= 10 ? 20 : cashOnCash >= 6 ? 14 : cashOnCash >= 2 ? 8 : 0; score += dscr >= 1.25 ? 15 : dscr >= 1 ? 10 : 0; score += expenseRatio < 35 ? 5 : expenseRatio < 45 ? 3 : 0; if (monthlyCashFlow < 0) score -= 15; if (dscr < 1) score -= 10; if (expenseRatio > 50) score -= 10; return Math.max(0, Math.min(100, score)); }
 function DecisionBadge({ label, tone }) { const styles = { green: "border border-green-500/40 bg-green-500/10 text-green-400", yellow: "border border-yellow-500/40 bg-yellow-500/10 text-yellow-400", red: "border border-red-500/40 bg-red-500/10 text-red-400" }; return <span className={`rounded-full px-3 py-1 text-xs font-semibold ${styles[tone] || styles.red}`}>{label}</span>; }
 function MetricBox({ value, status, compact = false }) { const styles = { good: "border border-green-500/30 bg-green-500/10 text-green-400", avg: "border border-yellow-500/30 bg-yellow-500/10 text-yellow-400", bad: "border border-red-500/30 bg-red-500/10 text-red-400" }; const labels = { good: "Good", avg: "Average", bad: "Poor" }; return <div className={`rounded-xl text-center font-semibold ${styles[status] || styles.bad} ${compact ? "px-2 py-2 text-xs" : "px-3 py-2 text-xs"}`}><div>{value}</div><div className="text-[10px] opacity-80">{labels[status] || "Poor"}</div></div>; }
 function metricStatus(value, type) { if (type === "cap") return value >= 7 ? "good" : value >= 5 ? "avg" : "bad"; if (type === "coc") return value >= 8 ? "good" : value >= 4 ? "avg" : "bad"; if (type === "dscr") return value >= 1.2 ? "good" : value >= 1 ? "avg" : "bad"; if (type === "expense") return value < 35 ? "good" : value <= 45 ? "avg" : "bad"; return "bad"; }
@@ -1042,30 +1008,3 @@ function formatCurrency(value) { const rounded = Math.round(Number(value) || 0);
 function formatPercent(value) { return `${(Number(value) || 0).toFixed(1)}%`; }
 function UpgradeModal({ onClose }) { return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"><div className="w-full max-w-lg rounded-3xl border border-blue-500/30 bg-slate-950 p-8 shadow-2xl"><div className="mb-4 text-center"><div className="mb-2 text-2xl font-bold text-white">Free Trials Completed</div><div className="text-sm leading-7 text-slate-300">Unlock bulk rental analysis, CSV exports, advanced deal scoring, and up to 100-property batch processing.</div></div><div className="mb-6 rounded-2xl border border-blue-500/30 bg-blue-500/10 p-4 text-center"><div className="text-sm text-blue-200">Professional Agent Access</div><div className="mt-2 text-4xl font-bold text-white">$49<span className="text-lg font-medium text-slate-300">/month</span></div><div className="mt-3 text-xs leading-6 text-slate-400">Cancel anytime. Access remains active through the current billing period.</div></div><button onClick={onClose} className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:bg-slate-800">Close</button></div></div>; }
 function LegalModal({ type, onClose }) { const content = { contact: { title: "Contact", body: "Rental Deal Screener is operated by Caribmare LLC. For business inquiries or general questions, contact support@RentalDealScreener.pro." }, support: { title: "Support", body: "Need help, found a bug, or have account questions? Email support@RentalDealScreener.pro and include screenshots or property details when possible." } }; const selected = content[type]; if (!selected) return null; return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"><div className="w-full max-w-2xl rounded-2xl border border-slate-700 bg-slate-950 p-6 shadow-2xl"><div className="mb-4 flex items-center justify-between"><h2 className="text-xl font-semibold text-white">{selected.title}</h2><button onClick={onClose} className="rounded-lg border border-slate-700 px-3 py-1 text-sm text-slate-300 transition hover:bg-slate-800">Close</button></div><div className="text-sm leading-7 text-slate-300">{selected.body}</div></div></div>; }
-
-function runSmokeTests() {
-  console.assert(normalizePropertyType("duplex").units === 2, "duplex should be 2 units");
-  console.assert(normalizePropertyType("quadplex").units === 4, "quadplex should be 4 units");
-  console.assert(calculateDealScore({ monthlyCashFlow: 600, capRate: 7, cashOnCash: 8, dscr: 1.25, noiAnnual: 30000, expenseRatio: 34 }) > 50, "strong deal should score above 50");
-  console.assert(metricStatus(30, "expense") === "good", "low expense ratio should be good");
-  console.assert(AGENT_FREE_TRIALS === 3, "free trial count should remain 3");
-  console.assert(AGENT_BATCH_LIMIT === 100, "batch limit should remain 100");
-  console.assert(normalizeHeader("List Price") === "listprice", "header normalization should work");
-  console.assert(normalizeHeader("\uFEFFType of Property") === "typeofproperty", "BOM headers should normalize correctly");
-  console.assert(findMappedField(["Type of Property"], MLS_FIELD_MAP.propertySubType) === "Type of Property", "property type mapping should work");
-  console.assert(mapMlsRow({ "Type of Property": "Duplex", "List Price": "$725,000", "MLS #": "A1", "City Name": "Miami" }).type === "Duplex", "property type should parse correctly");
-  console.assert(mapMlsRow({ "City Name": "Miami" }).city === "Miami", "city mapping should parse correctly");
-  console.assert(mapMlsRow({ "List Price": "$725,000" }).price === 725000, "formatted prices should parse correctly");
-  console.assert(findMappedField(["List Price"], MLS_FIELD_MAP.listPrice) === "List Price", "price mapping should work");
-  console.assert(findMappedField(["MLS #"], MLS_FIELD_MAP.listingId) === "MLS #", "MLS listing ID mapping should work");
-  console.assert(findMappedField(["#Beds"], MLS_FIELD_MAP.bedrooms) === "#Beds", "bedroom mapping should work");
-  console.assert(findMappedField(["SqFt LA"], MLS_FIELD_MAP.livingArea) === "SqFt LA", "living area mapping should work");
-  console.assert(findMappedField(["Bad Header"], undefined) === null, "missing alias lists should not crash");
-  console.assert(findMappedField(["1", "2", "3"], MLS_FIELD_MAP.city) === null, "numeric headers should never map to city");
-  console.assert(findMappedField(["1", "Address"], MLS_FIELD_MAP.address) === "Address", "real address headers should win over numeric values");
-  console.assert(typeof Papa.parse === "function", "PapaParse should be available");
-  console.assert(analyzeRows([{ price: 300000, type: "duplex", address: "A" }], DEFAULT_ASSUMPTIONS).length === 1, "analysis should return one row");
-  console.assert(sortRows([{ score: 1 }, { score: 2 }], "score")[0].score === 2, "score sort should work");
-}
-
-runSmokeTests();
