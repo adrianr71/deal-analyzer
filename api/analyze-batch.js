@@ -1,26 +1,8 @@
 import { analyzeRows } from "../lib/analyzer1.js";
+import { checkSubscriptionStatus } from "../lib/subscription-status.js";
 
-async function checkSubscriptionOnServer(customerId, subscriptionId) {
-  try {
-    if (!customerId && !subscriptionId) return false;
-
-    const query = customerId
-      ? `customer_id=${encodeURIComponent(customerId)}`
-      : `subscription_id=${encodeURIComponent(subscriptionId)}`;
-
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "http://localhost:3000";
-
-    const response = await fetch(`${baseUrl}/api/get-subscription-status?${query}`);
-    const data = await response.json();
-
-    return data.subscribed === true;
-  } catch (error) {
-    console.error("Subscription check failed:", error);
-    return false;
-  }
-}
+const PAID_BATCH_LIMIT = 100;
+const FREE_BATCH_LIMIT = 20;
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -28,24 +10,35 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { rows, assumptions, taxOverrides, customerId, subscriptionId } = req.body || {};
+    const { rows, assumptions, taxOverrides, customerId, subscriptionId } =
+      req.body || {};
 
     if (!Array.isArray(rows) || !assumptions) {
       return res.status(400).json({ error: "Missing rows or assumptions" });
     }
 
-    const isSubscribed = await checkSubscriptionOnServer(customerId, subscriptionId);
-    const limit = isSubscribed ? 100 : 20;
+    const subscription = await checkSubscriptionStatus({
+      customerId,
+      subscriptionId,
+    });
+
+    const isSubscribed = subscription.subscribed === true;
+    const limit = isSubscribed ? PAID_BATCH_LIMIT : FREE_BATCH_LIMIT;
 
     if (rows.length > limit) {
-      return res.status(403).json({ error: `Batch exceeds ${limit} properties for this plan.` });
+      return res.status(403).json({
+        error: `Batch exceeds ${limit} properties for this plan.`,
+        isSubscribed,
+        limit,
+      });
     }
 
     const analyzed = analyzeRows(rows, assumptions, taxOverrides || {});
 
     return res.status(200).json({
       analyzed,
-      isSubscribed
+      isSubscribed,
+      limit,
     });
   } catch (error) {
     console.error("Analyze batch error:", error);
