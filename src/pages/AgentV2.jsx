@@ -98,7 +98,8 @@ export default function App() {
   const [importSummary, setImportSummary] = useState(null);
   const [reportBranding, setReportBranding] = useState(() => loadReportBranding());
   const [taxOverrides, setTaxOverrides] = useState({});
-  const [isSubscribed, setIsSubscribed] = useState(localStorage.getItem("subscribed") === "true");
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subscriptionChecked, setSubscriptionChecked] = useState(false);
 
 useEffect(() => {
   async function verifyStripeSuccess() {
@@ -135,27 +136,35 @@ useEffect(() => {
     const customerId = localStorage.getItem("stripe_customer_id");
     const subscriptionId = localStorage.getItem("stripe_subscription_id");
 
-    if (!customerId && !subscriptionId) return;
+    if (!customerId && !subscriptionId) {
+  localStorage.removeItem("subscribed");
+  setIsSubscribed(false);
+  setSubscriptionChecked(true);
+  return;
+}
 
-    try {
-      const query = customerId
-        ? `customer_id=${encodeURIComponent(customerId)}`
-        : `subscription_id=${encodeURIComponent(subscriptionId)}`;
+try {
+  const query = customerId
+    ? `customer_id=${encodeURIComponent(customerId)}`
+    : `subscription_id=${encodeURIComponent(subscriptionId)}`;
 
-      const response = await fetch(`/api/get-subscription-status?${query}`);
-      const data = await response.json();
+  const response = await fetch(`/api/get-subscription-status?${query}`);
+  const data = await response.json();
 
-      if (response.ok && data.subscribed) {
-        localStorage.setItem("subscribed", "true");
-        setIsSubscribed(true);
-      } else {
-        localStorage.removeItem("subscribed");
-        setIsSubscribed(false);
-      }
-    } catch (error) {
-      console.error("Saved subscription check failed:", error);
-    }
+  if (response.ok && data.subscribed) {
+    localStorage.setItem("subscribed", "true");
+    setIsSubscribed(true);
+  } else {
+    localStorage.removeItem("subscribed");
+    setIsSubscribed(false);
   }
+} catch (error) {
+  console.error("Saved subscription check failed:", error);
+  localStorage.removeItem("subscribed");
+  setIsSubscribed(false);
+} finally {
+  setSubscriptionChecked(true);
+}
 
   checkSavedSubscription();
 }, []);
@@ -546,7 +555,24 @@ function handlePrintSummary() {
 }
 
 function loadSavedRows() { try { const saved = sessionStorage.getItem(SESSION_KEY); const parsed = saved ? JSON.parse(saved) : []; return Array.isArray(parsed) ? parsed : []; } catch { return []; } }
-function loadRemainingTrials() { try { const saved = localStorage.getItem(TRIAL_KEY); return saved ? Number(saved) : AGENT_FREE_TRIALS; } catch { return AGENT_FREE_TRIALS; } }
+function loadRemainingTrials() {
+  try {
+    const saved = localStorage.getItem(TRIAL_KEY);
+    const parsed = saved === null ? AGENT_FREE_TRIALS : Number(saved);
+
+    if (!Number.isFinite(parsed)) return AGENT_FREE_TRIALS;
+
+    const clamped = Math.max(0, Math.min(AGENT_FREE_TRIALS, parsed));
+
+    if (String(parsed) !== String(clamped)) {
+      localStorage.setItem(TRIAL_KEY, String(clamped));
+    }
+
+    return clamped;
+  } catch {
+    return AGENT_FREE_TRIALS;
+  }
+}
 function loadReportBranding() { try { const saved = localStorage.getItem(BRANDING_KEY); return saved ? JSON.parse(saved) : { agentName: "", company: "", phone: "", email: "" }; } catch { return { agentName: "", company: "", phone: "", email: "" }; } }
 function analyzeRows(rows, assumptions, taxOverrides) {
   const safeOverrides = taxOverrides || {};
