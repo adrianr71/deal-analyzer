@@ -193,17 +193,20 @@ export default function Terms() {
           </section>
 
           <section>
-            <h2 className="mb-3 text-2xl font-semibold text-white">
+             <h2 className="mb-2 text-xl font-semibold text-white">
               Intellectual Property
-            </h2>
+             </h2>
 
-            <p>
-              The platform, scoring systems, software, design, branding,
-              workflows, and related materials are owned by Rental Deal
-              Screener or its licensors. Users may not copy, reproduce, resell,
-              sublicense, or create derivative works from the platform except
-              as expressly permitted.
-            </p>
+             <p>
+             The platform, scoring systems, software, design, branding, workflows, and
+             related materials are owned by Adrian Mandry and licensed for operation by
+             Caribmare LLC, or by their respective licensors.
+             </p>
+
+             <p>
+              Users may not copy, reproduce, resell, sublicense, or create derivative works
+              from the platform except as expressly permitted.
+             </p>
           </section>
 
           <section>
