@@ -63,10 +63,13 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Missing rows or assumptions" });
     }
 
-    const subscription = await checkSubscriptionStatus({
-      customerId,
-      subscriptionId,
-    });
+const subscription = await checkSubscriptionStatus({
+  customerId,
+  subscriptionId,
+});
+
+const isSubscribed = subscription.subscribed === true;
+const limit = isSubscribed ? PAID_BATCH_LIMIT : FREE_BATCH_LIMIT;
 
 await logUsageEvent({
   customerId,
@@ -80,16 +83,13 @@ await logUsageEvent({
   },
 });
 
-    const isSubscribed = subscription.subscribed === true;
-    const limit = isSubscribed ? PAID_BATCH_LIMIT : FREE_BATCH_LIMIT;
-
-    if (rows.length > limit) {
-      return res.status(403).json({
-        error: `Batch exceeds ${limit} properties for this plan.`,
-        isSubscribed,
-        limit,
-      });
-    }
+if (rows.length > limit) {
+  return res.status(403).json({
+    error: `Batch exceeds ${limit} properties for this plan.`,
+    isSubscribed,
+    limit,
+  });
+}
 
     const analyzed = analyzeRows(rows, assumptions, taxOverrides || {});
 
