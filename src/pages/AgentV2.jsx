@@ -230,16 +230,22 @@ function handleReportBrandingChange(nextBranding) {
   }
 
 
-async function startStripeCheckout() {
+async function startStripeCheckout(plan = "individual") {
   try {
     const response = await fetch("/api/create-checkout-session", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        plan,
+      }),
     });
 
     const data = await response.json();
 
     if (!response.ok || !data.url) {
-      alert("Unable to start checkout. Please try again.");
+      alert(data.error || "Unable to start checkout. Please try again.");
       return;
     }
 
@@ -249,6 +255,7 @@ async function startStripeCheckout() {
     alert("Unable to start checkout. Please try again.");
   }
 }
+
   async function openCustomerPortal() {
   const customerId = localStorage.getItem("stripe_customer_id");
 
@@ -433,11 +440,19 @@ function handlePrintSummary() {
                 <div>
                   {!isPaid ? (
   <>
-    <div className="inline-flex items-center rounded-full border border-blue-400/30 bg-blue-500/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-blue-300">Professional Agent Platform</div>
-    <div className="mt-4 flex items-end gap-2">
-      <div className="text-5xl font-black tracking-tight text-white md:text-6xl">$49</div>
-      <div className="pb-2 text-lg font-medium text-slate-300">/month</div>
-    </div>
+<div className="inline-flex items-center rounded-full border border-blue-400/30 bg-blue-500/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-blue-300">
+  Real Estate Professional Plans
+</div>
+
+<div className="mt-4">
+  <div className="text-3xl font-black tracking-tight text-white md:text-4xl">
+    Choose the plan that fits how you work.
+  </div>
+
+  <div className="mt-2 text-sm text-slate-400 md:text-base">
+    Individual and team options for real estate professionals.
+  </div>
+</div>
   </>
 ) : (
 <>
@@ -478,22 +493,113 @@ function handlePrintSummary() {
 )}
 
 {!isPaid && (
-  <div className="mt-5">
-    <button
-      onClick={startStripeCheckout}
-      className="rounded-xl bg-cyan-500 px-6 py-3 text-sm font-semibold text-black transition hover:bg-cyan-400"
-    >
-      Start Subscription
-    </button>
+  <div className="mt-6 grid gap-5 md:grid-cols-3">
+
+    {/* Individual */}
+    <div className="rounded-2xl border border-slate-700 bg-slate-950/40 p-5">
+      <div className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">
+        Individual
+      </div>
+
+      <div className="mt-3 flex items-end gap-2">
+        <div className="text-4xl font-black text-white">$49</div>
+        <div className="pb-1 text-sm text-slate-300">/month</div>
+      </div>
+
+      <div className="mt-4 space-y-2 text-sm text-slate-300">
+        <div>1 named user</div>
+        <div>Up to 2 personal devices</div>
+        <div>Analyze up to 100 properties per batch</div>
+        <div>Professional reports and exports</div>
+      </div>
+
+      <button
+        onClick={() => startStripeCheckout("individual")}
+        className="mt-5 w-full rounded-xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-black transition hover:bg-cyan-400"
+      >
+        Choose Individual
+      </button>
+    </div>
+
+    {/* Team 5 */}
+    <div className="relative rounded-2xl border border-amber-400/70 bg-slate-950/50 p-5 shadow-lg shadow-amber-500/10">
+      <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amber-400 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-black">
+        Most Popular for Teams
+      </div>
+
+      <div className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">
+        Team 5
+      </div>
+
+      <div className="mt-1 text-sm text-slate-400">
+       Up to 5 users
+      </div>
+
+      <div className="mt-3 flex items-end gap-2">
+        <div className="text-4xl font-black text-white">$199</div>
+        <div className="pb-1 text-sm text-slate-300">/month</div>
+      </div>
+
+      <div className="mt-4 space-y-2 text-sm text-slate-300">
+        <div>Up to 2 devices per user</div>
+        <div>Team administration</div>
+        <div>Centralized billing</div>
+      </div>
+
+      <button
+        onClick={() => startStripeCheckout("team_5")}
+        className="mt-5 w-full rounded-xl bg-amber-400 px-5 py-3 text-sm font-semibold text-black transition hover:bg-amber-300"
+      >
+        Choose Team 5
+      </button>
+    </div>
+
+    {/* Team 10 */}
+    <div className="rounded-2xl border border-slate-600 bg-slate-950/40 p-5">
+      <div className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-200">
+        Team 10
+      </div>
+
+      <div className="mt-1 text-sm text-slate-400">
+       Up to 10 users
+      </div>
+
+      <div className="mt-3 flex items-end gap-2">
+        <div className="text-4xl font-black text-white">$349</div>
+        <div className="pb-1 text-sm text-slate-300">/month</div>
+      </div>
+
+      <div className="mt-4 space-y-2 text-sm text-slate-300">
+        <div>Up to 2 devices per user</div>
+        <div>Team administration</div>
+        <div>Priority support</div>
+      </div>
+
+      <button
+        onClick={() => startStripeCheckout("team_10")}
+        className="mt-5 w-full rounded-xl border border-slate-500 bg-slate-800 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
+      >
+        Choose Team 10
+      </button>
+    </div>
+
   </div>
 )}
 {!isPaid && (
   <>
-<div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-400">
-                    <div className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">Individual Professional Plan</div>
-                    <div className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">Cancel Anytime</div>
-                    <div className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">Access Across Personal Devices</div>
-                  </div>
+    <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-400">
+      <div className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
+        Monthly Subscription
+      </div>
+
+      <div className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
+        Cancel Anytime
+      </div>
+
+      <div className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
+        Secure Stripe Checkout
+      </div>
+    </div>
 
                   <div className="mt-4 text-xs leading-6 text-slate-500">
   By subscribing, you agree to our{" "}
