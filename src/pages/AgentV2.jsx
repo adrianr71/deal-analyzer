@@ -436,7 +436,7 @@ function handlePrintSummary() {
   investment metrics commonly used by investors,
   mortgage professionals, and DSCR loan providers.
 </p>            <div className="mt-5 overflow-hidden rounded-3xl border border-blue-500/40 bg-gradient-to-r from-blue-950/80 via-slate-900 to-cyan-950/70 p-6 shadow-2xl shadow-blue-950/30">
-              <div className={`flex flex-col gap-6 ${isPaid ? "items-center text-center" : "lg:flex-row lg:items-center lg:justify-between"}`}>
+              <div className={`flex flex-col gap-6 ${isPaid ? "items-center text-center" : ""}`}>
                 <div>
                   {!isPaid ? (
   <>
@@ -585,6 +585,31 @@ function handlePrintSummary() {
 
   </div>
 )}
+
+{!isPaid && (
+  <div className="mt-5 w-full rounded-2xl border border-cyan-400/30 bg-cyan-500/10 px-6 py-4 text-center">
+    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
+      Free Trial
+    </div>
+
+    <div className="mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+      <span className="text-3xl font-bold text-white">
+        {remainingTrials}
+      </span>
+
+      <span className="text-sm font-medium text-slate-300">
+        Practice Batches Remaining
+      </span>
+
+      <span className="hidden text-slate-600 sm:inline">•</span>
+
+      <span className="text-sm text-slate-400">
+        20 Properties Max Per Trial Batch
+      </span>
+    </div>
+  </div>
+)}
+
 {!isPaid && (
   <>
     <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-400">
@@ -618,20 +643,9 @@ function handlePrintSummary() {
   </>
 )}
                 </div>
-         <div className={`${isPaid ? "hidden" : ""} min-w-[260px] rounded-2xl border border-cyan-400/30 bg-cyan-500/10 p-5 text-center`}>
-                  {!isPaid ? <><div className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
-  Free Trial
-</div>
+         
 
-<div className="mt-3 text-3xl font-bold text-white">
-  {remainingTrials}
-</div>
 
-<div className="mt-1 text-sm text-slate-300">
-  Practice Batches Remaining
-<div className="mt-3 text-xs leading-5 text-slate-400">20 Properties Max Per Trial Batch</div>
-</div></> : <><div className="text-xs font-semibold uppercase tracking-[0.18em] text-green-300">Professional Access Active</div><div className="mt-3 text-3xl font-bold text-white">Unlimited</div><div className="mt-1 text-sm text-slate-300">Monthly Batch Access</div><div className="mt-4 text-xs leading-6 text-slate-400">Your professional subscription is currently active.</div></>}
-                </div>
               </div>
             </div>
           </header>
