@@ -532,7 +532,7 @@ function handlePrintSummary() {
       </div>
 
       <div className="mt-1 text-sm text-slate-400">
-       Up to 5 users
+        Up to 5 users
       </div>
 
       <div className="mt-3 flex items-end gap-2">
@@ -561,7 +561,7 @@ function handlePrintSummary() {
       </div>
 
       <div className="mt-1 text-sm text-slate-400">
-       Up to 10 users
+        Up to 10 users
       </div>
 
       <div className="mt-3 flex items-end gap-2">
@@ -587,25 +587,29 @@ function handlePrintSummary() {
 )}
 
 {!isPaid && (
-  <div className="mt-5 w-full rounded-2xl border border-cyan-400/30 bg-cyan-500/10 px-6 py-4 text-center">
-    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
-      Free Trial
-    </div>
+  <div className="mt-5 w-full rounded-2xl border border-cyan-400/30 bg-cyan-500/10 px-4 py-3">
+    <div className="flex flex-col items-center justify-center gap-2 text-center sm:flex-row sm:gap-4">
 
-    <div className="mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-      <span className="text-3xl font-bold text-white">
+      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
+        Free Trial
+      </div>
+
+      <div className="text-2xl font-bold text-white">
         {remainingTrials}
-      </span>
+      </div>
 
-      <span className="text-sm font-medium text-slate-300">
+      <div className="text-sm font-medium text-slate-300">
         Practice Batches Remaining
-      </span>
+      </div>
 
-      <span className="hidden text-slate-600 sm:inline">•</span>
+      <div className="hidden text-slate-600 sm:block">
+        •
+      </div>
 
-      <span className="text-sm text-slate-400">
+      <div className="text-sm text-slate-400">
         20 Properties Max Per Trial Batch
-      </span>
+      </div>
+
     </div>
   </div>
 )}
@@ -626,27 +630,24 @@ function handlePrintSummary() {
       </div>
     </div>
 
-                  <div className="mt-4 text-xs leading-6 text-slate-500">
-  By subscribing, you agree to our{" "}
-  <a href="/terms" className="text-cyan-400 hover:underline">
-    Terms of Use
-  </a>{" "}
-  and{" "}
-  <a href="/privacy" className="text-cyan-400 hover:underline">
-    Privacy Policy
-  </a>.
-  <br />
-  Subscriptions renew automatically each month until canceled.
-  Cancel anytime. Access remains active through the end of your
-  billing period.
-</div>
+    <div className="mt-4 text-xs leading-6 text-slate-500">
+      By subscribing, you agree to our{" "}
+      <a href="/terms" className="text-cyan-400 hover:underline">
+        Terms of Use
+      </a>{" "}
+      and{" "}
+      <a href="/privacy" className="text-cyan-400 hover:underline">
+        Privacy Policy
+      </a>.
+      <br />
+      Subscriptions renew automatically each month until canceled.
+      Cancel anytime. Access remains active through the end of your
+      billing period.
+    </div>
   </>
 )}
-                </div>
-         
-
-
-              </div>
+           </div>
+             </div>
             </div>
           </header>
 
