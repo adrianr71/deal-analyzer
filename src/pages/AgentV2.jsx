@@ -493,121 +493,122 @@ function handlePrintSummary() {
 )}
 
 {!isPaid && (
-  <div className="mt-6 grid gap-5 md:grid-cols-3">
+  <div className="w-full">
 
-    {/* Individual */}
-    <div className="rounded-2xl border border-slate-700 bg-slate-950/40 p-5">
-      <div className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">
-        Individual
+    <div className="mt-6 grid gap-5 md:grid-cols-3">
+
+      {/* Individual */}
+      <div className="rounded-2xl border border-slate-700 bg-slate-950/40 p-5">
+        <div className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">
+          Individual
+        </div>
+
+        <div className="mt-3 flex items-end gap-2">
+          <div className="text-4xl font-black text-white">$49</div>
+          <div className="pb-1 text-sm text-slate-300">/month</div>
+        </div>
+
+        <div className="mt-4 space-y-2 text-sm text-slate-300">
+          <div>1 named user</div>
+          <div>Up to 2 personal devices</div>
+          <div>Analyze up to 100 properties per batch</div>
+          <div>Professional reports and exports</div>
+        </div>
+
+        <button
+          onClick={() => startStripeCheckout("individual")}
+          className="mt-5 w-full rounded-xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-black transition hover:bg-cyan-400"
+        >
+          Choose Individual
+        </button>
       </div>
 
-      <div className="mt-3 flex items-end gap-2">
-        <div className="text-4xl font-black text-white">$49</div>
-        <div className="pb-1 text-sm text-slate-300">/month</div>
+      {/* Team 5 */}
+      <div className="relative rounded-2xl border border-amber-400/70 bg-slate-950/50 p-5 shadow-lg shadow-amber-500/10">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amber-400 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-black">
+          Most Popular for Teams
+        </div>
+
+        <div className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">
+          Team 5
+        </div>
+
+        <div className="mt-1 text-sm text-slate-400">
+          Up to 5 users
+        </div>
+
+        <div className="mt-3 flex items-end gap-2">
+          <div className="text-4xl font-black text-white">$199</div>
+          <div className="pb-1 text-sm text-slate-300">/month</div>
+        </div>
+
+        <div className="mt-4 space-y-2 text-sm text-slate-300">
+          <div>Up to 2 devices per user</div>
+          <div>Team administration</div>
+          <div>Centralized billing</div>
+        </div>
+
+        <button
+          onClick={() => startStripeCheckout("team_5")}
+          className="mt-5 w-full rounded-xl bg-amber-400 px-5 py-3 text-sm font-semibold text-black transition hover:bg-amber-300"
+        >
+          Choose Team 5
+        </button>
       </div>
 
-      <div className="mt-4 space-y-2 text-sm text-slate-300">
-        <div>1 named user</div>
-        <div>Up to 2 personal devices</div>
-        <div>Analyze up to 100 properties per batch</div>
-        <div>Professional reports and exports</div>
+      {/* Team 10 */}
+      <div className="rounded-2xl border border-slate-600 bg-slate-950/40 p-5">
+        <div className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-200">
+          Team 10
+        </div>
+
+        <div className="mt-1 text-sm text-slate-400">
+          Up to 10 users
+        </div>
+
+        <div className="mt-3 flex items-end gap-2">
+          <div className="text-4xl font-black text-white">$349</div>
+          <div className="pb-1 text-sm text-slate-300">/month</div>
+        </div>
+
+        <div className="mt-4 space-y-2 text-sm text-slate-300">
+          <div>Up to 2 devices per user</div>
+          <div>Team administration</div>
+          <div>Priority support</div>
+        </div>
+
+        <button
+          onClick={() => startStripeCheckout("team_10")}
+          className="mt-5 w-full rounded-xl border border-slate-500 bg-slate-800 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
+        >
+          Choose Team 10
+        </button>
       </div>
 
-      <button
-        onClick={() => startStripeCheckout("individual")}
-        className="mt-5 w-full rounded-xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-black transition hover:bg-cyan-400"
-      >
-        Choose Individual
-      </button>
     </div>
 
-    {/* Team 5 */}
-    <div className="relative rounded-2xl border border-amber-400/70 bg-slate-950/50 p-5 shadow-lg shadow-amber-500/10">
-      <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amber-400 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-black">
-        Most Popular for Teams
-      </div>
+    {/* Free Trial — below the three paid plans */}
+    <div className="mt-5 w-full rounded-2xl border border-cyan-400/30 bg-cyan-500/10 px-4 py-3">
+      <div className="flex flex-col items-center justify-center gap-2 text-center sm:flex-row sm:gap-4">
+        <div className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
+          Free Trial
+        </div>
 
-      <div className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">
-        Team 5
-      </div>
+        <div className="text-2xl font-bold text-white">
+          {remainingTrials}
+        </div>
 
-      <div className="mt-1 text-sm text-slate-400">
-        Up to 5 users
-      </div>
+        <div className="text-sm font-medium text-slate-300">
+          Practice Batches Remaining
+        </div>
 
-      <div className="mt-3 flex items-end gap-2">
-        <div className="text-4xl font-black text-white">$199</div>
-        <div className="pb-1 text-sm text-slate-300">/month</div>
-      </div>
+        <div className="hidden text-slate-600 sm:block">
+          •
+        </div>
 
-      <div className="mt-4 space-y-2 text-sm text-slate-300">
-        <div>Up to 2 devices per user</div>
-        <div>Team administration</div>
-        <div>Centralized billing</div>
-      </div>
-
-      <button
-        onClick={() => startStripeCheckout("team_5")}
-        className="mt-5 w-full rounded-xl bg-amber-400 px-5 py-3 text-sm font-semibold text-black transition hover:bg-amber-300"
-      >
-        Choose Team 5
-      </button>
-    </div>
-
-    {/* Team 10 */}
-    <div className="rounded-2xl border border-slate-600 bg-slate-950/40 p-5">
-      <div className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-200">
-        Team 10
-      </div>
-
-      <div className="mt-1 text-sm text-slate-400">
-        Up to 10 users
-      </div>
-
-      <div className="mt-3 flex items-end gap-2">
-        <div className="text-4xl font-black text-white">$349</div>
-        <div className="pb-1 text-sm text-slate-300">/month</div>
-      </div>
-
-      <div className="mt-4 space-y-2 text-sm text-slate-300">
-        <div>Up to 2 devices per user</div>
-        <div>Team administration</div>
-        <div>Priority support</div>
-      </div>
-
-      <button
-        onClick={() => startStripeCheckout("team_10")}
-        className="mt-5 w-full rounded-xl border border-slate-500 bg-slate-800 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
-      >
-        Choose Team 10
-      </button>
-    </div>
-
-  </div>
-)}
-
-{!isPaid && (
-  <div className="mt-5 w-full rounded-2xl border border-cyan-400/30 bg-cyan-500/10 px-4 py-3">
-    <div className="flex flex-col items-center justify-center gap-2 text-center sm:flex-row sm:gap-4">
-
-      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
-        Free Trial
-      </div>
-
-      <div className="text-2xl font-bold text-white">
-        {remainingTrials}
-      </div>
-
-      <div className="text-sm font-medium text-slate-300">
-        Practice Batches Remaining
-      </div>
-
-      <div className="hidden text-slate-600 sm:block">
-        •
-      </div>
-
-      <div className="text-sm text-slate-400">
-        20 Properties Max Per Trial Batch
+        <div className="text-sm text-slate-400">
+          20 Properties Max Per Trial Batch
+        </div>
       </div>
 
     </div>
