@@ -585,10 +585,8 @@ function handlePrintSummary() {
         </button>
       </div>
 
-    </div>
-
-    {/* Free Trial — below the three paid plans */}
-    <div className="mt-5 w-full rounded-2xl border border-cyan-400/30 bg-cyan-500/10 px-4 py-3">
+       {/* Free Trial — below the three paid plans */}
+    <div className="mt-5 w-full rounded-2xl border border-cyan-400/30 bg-cyan-500/10 px-4 py-3 md:col-span-3">
       <div className="flex flex-col items-center justify-center gap-2 text-center sm:flex-row sm:gap-4">
         <div className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
           Free Trial
@@ -610,7 +608,7 @@ function handlePrintSummary() {
           20 Properties Max Per Trial Batch
         </div>
       </div>
-
+     </div>
     </div>
   </div>
 )}
