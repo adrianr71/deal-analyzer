@@ -34,8 +34,16 @@ async function saveSubscription(subscription, eventId) {
       ? subscription.customer
       : subscription.customer?.id;
 
-  const priceId = subscription.items?.data?.[0]?.price?.id || null;
-  const email = await getCustomerEmail(subscription.customer);
+const priceId = subscription.items?.data?.[0]?.price?.id || null;
+const email = await getCustomerEmail(subscription.customer);
+
+const plan = subscription.metadata?.plan || "individual";
+
+const maxUsers =
+  Number(subscription.metadata?.max_users) || 1;
+
+const maxDevicesPerUser =
+  Number(subscription.metadata?.max_devices_per_user) || 2;
 
   const periodEnd =
    subscription.current_period_end ||
@@ -47,19 +55,26 @@ async function saveSubscription(subscription, eventId) {
    subscription.cancel_at_period_end === true ||
    Boolean(subscription.cancel_at);
 
-  const body = {
-    email,
-    stripe_customer_id: customerId,
-    stripe_subscription_id: subscription.id,
-    stripe_price_id: priceId,
-    status: subscription.status,
+const body = {
+  email,
+  stripe_customer_id: customerId,
+  stripe_subscription_id: subscription.id,
+  stripe_price_id: priceId,
+
+  plan,
+  max_users: maxUsers,
+  max_devices_per_user: maxDevicesPerUser,
+
+  status: subscription.status,
+
   current_period_end: periodEnd
     ? new Date(periodEnd * 1000).toISOString()
     : null,
+
   cancel_at_period_end: isCancelingAtPeriodEnd,
   last_event_id: eventId,
   updated_at: new Date().toISOString(),
-  };
+};
   const supabaseUrl = String(process.env.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
 
   const response = await fetch(

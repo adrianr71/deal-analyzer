@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import Papa from "papaparse";
+import { supabase } from "../supabaseClient";
 
 const DEFAULT_ASSUMPTIONS = {
   closingCostsPct: 3,
@@ -99,7 +100,92 @@ export default function App() {
   const [reportBranding, setReportBranding] = useState(() => loadReportBranding());
   const [taxOverrides, setTaxOverrides] = useState({});
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subscriptionPlan, setSubscriptionPlan] = useState("individual");
+  const [maxUsers, setMaxUsers] = useState(1);
+  const [maxDevicesPerUser, setMaxDevicesPerUser] = useState(2);
+  const [authUser, setAuthUser] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
   const [subscriptionChecked, setSubscriptionChecked] = useState(false);
+
+useEffect(() => {
+  async function loadAuthSession() {
+    const { data, error } = await supabase.auth.getSession();
+
+    if (error) {
+      console.error("Supabase auth session lookup failed:", error);
+    }
+
+    setAuthUser(data.session?.user || null);
+    setAuthChecked(true);
+  }
+
+  loadAuthSession();
+
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    setAuthUser(session?.user || null);
+    setAuthChecked(true);
+  });
+
+  return () => {
+    subscription.unsubscribe();
+  };
+}, []);
+
+async function handleSignUp() {
+  const email = authEmail.trim();
+
+  if (!email || !authPassword) {
+    alert("Please enter an email and password.");
+    return;
+  }
+
+  const { error } = await supabase.auth.signUp({
+    email,
+    password: authPassword,
+  });
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  alert("Account created. Please check your email if confirmation is required.");
+}
+
+async function handleSignIn() {
+  const email = authEmail.trim();
+
+  if (!email || !authPassword) {
+    alert("Please enter an email and password.");
+    return;
+  }
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password: authPassword,
+  });
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  setAuthPassword("");
+}
+
+async function handleSignOut() {
+  const { error } = await supabase.auth.signOut({
+    scope: "local",
+  });
+
+  if (error) {
+    alert(error.message);
+  }
+}
 
 useEffect(() => {
   async function verifyStripeSuccess() {
@@ -114,11 +200,48 @@ useEffect(() => {
       const data = await response.json();
 
       if (response.ok && data.subscribed) {
-        localStorage.setItem("subscribed", "true");
-        if (data.customerId) localStorage.setItem("stripe_customer_id", data.customerId);
-        if (data.subscriptionId) localStorage.setItem("stripe_subscription_id", data.subscriptionId);
-        setIsSubscribed(true);
-        window.history.replaceState({}, "", "/agents");
+localStorage.setItem("subscribed", "true");
+
+if (data.customerId) {
+  localStorage.setItem("stripe_customer_id", data.customerId);
+}
+
+if (data.subscriptionId) {
+  localStorage.setItem("stripe_subscription_id", data.subscriptionId);
+}
+
+setIsSubscribed(true);
+
+const entitlementQuery = data.customerId
+  ? `customer_id=${encodeURIComponent(data.customerId)}`
+  : data.subscriptionId
+  ? `subscription_id=${encodeURIComponent(data.subscriptionId)}`
+  : "";
+
+if (entitlementQuery) {
+  try {
+    const entitlementResponse = await fetch(
+      `/api/get-subscription-status?${entitlementQuery}`
+    );
+
+    const entitlementData = await entitlementResponse.json();
+
+    if (entitlementResponse.ok && entitlementData.subscribed) {
+      setSubscriptionPlan(entitlementData.plan || "individual");
+      setMaxUsers(Number(entitlementData.maxUsers) || 1);
+      setMaxDevicesPerUser(
+        Number(entitlementData.maxDevicesPerUser) || 2
+      );
+    }
+  } catch (entitlementError) {
+    console.error(
+      "Subscription entitlement lookup failed:",
+      entitlementError
+    );
+  }
+}
+
+window.history.replaceState({}, "", "/agents");
       } else {
         alert("Stripe checkout could not be verified. Please contact support.");
       }
@@ -137,10 +260,13 @@ useEffect(() => {
     const subscriptionId = localStorage.getItem("stripe_subscription_id");
 
     if (!customerId && !subscriptionId) {
-  localStorage.removeItem("subscribed");
-  setIsSubscribed(false);
-  setSubscriptionChecked(true);
-  return;
+    localStorage.removeItem("subscribed");
+    setIsSubscribed(false);
+    setSubscriptionPlan("individual");
+    setMaxUsers(1);
+    setMaxDevicesPerUser(2);
+    setSubscriptionChecked(true);
+    return;
 }
 
 try {
@@ -151,17 +277,30 @@ try {
   const response = await fetch(`/api/get-subscription-status?${query}`);
   const data = await response.json();
 
-  if (response.ok && data.subscribed) {
-    localStorage.setItem("subscribed", "true");
-    setIsSubscribed(true);
-  } else {
-    localStorage.removeItem("subscribed");
-    setIsSubscribed(false);
-  }
+if (response.ok && data.subscribed) {
+  localStorage.setItem("subscribed", "true");
+
+  setIsSubscribed(true);
+
+  setSubscriptionPlan(data.plan || "individual");
+  setMaxUsers(Number(data.maxUsers) || 1);
+  setMaxDevicesPerUser(Number(data.maxDevicesPerUser) || 2);
+} else {
+  localStorage.removeItem("subscribed");
+
+  setIsSubscribed(false);
+
+  setSubscriptionPlan("individual");
+  setMaxUsers(1);
+  setMaxDevicesPerUser(2);
+}
 } catch (error) {
   console.error("Saved subscription check failed:", error);
-  localStorage.removeItem("subscribed");
-  setIsSubscribed(false);
+localStorage.removeItem("subscribed");
+setIsSubscribed(false);
+setSubscriptionPlan("individual");
+setMaxUsers(1);
+setMaxDevicesPerUser(2);
 } finally {
   setSubscriptionChecked(true);
 }
@@ -435,7 +574,75 @@ function handlePrintSummary() {
   Cap Rate, Cash Flow, DSCR, CoC Return, and lender-focused
   investment metrics commonly used by investors,
   mortgage professionals, and DSCR loan providers.
-</p>            <div className="mt-5 overflow-hidden rounded-3xl border border-blue-500/40 bg-gradient-to-r from-blue-950/80 via-slate-900 to-cyan-950/70 p-6 shadow-2xl shadow-blue-950/30">
+</p>            
+{authChecked && (
+  <div className="mt-5 rounded-2xl border border-slate-700 bg-slate-950/40 p-4">
+    {authUser ? (
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-green-300">
+            Signed In
+          </div>
+
+          <div className="mt-1 text-sm text-slate-300">
+            {authUser.email}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleSignOut}
+          className="rounded-xl border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
+        >
+          Sign Out
+        </button>
+      </div>
+    ) : (
+      <>
+        <div className="text-sm font-semibold text-white">
+          Account Access
+        </div>
+
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <input
+            type="email"
+            value={authEmail}
+            onChange={(event) => setAuthEmail(event.target.value)}
+            placeholder="Email address"
+            className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-400"
+          />
+
+          <input
+            type="password"
+            value={authPassword}
+            onChange={(event) => setAuthPassword(event.target.value)}
+            placeholder="Password"
+            className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-400"
+          />
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={handleSignIn}
+            className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-black transition hover:bg-cyan-400"
+          >
+            Sign In
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSignUp}
+            className="rounded-xl border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
+          >
+            Create Account
+          </button>
+        </div>
+      </>
+    )}
+  </div>
+)}
+<div className="mt-5 overflow-hidden rounded-3xl border border-blue-500/40 bg-gradient-to-r from-blue-950/80 via-slate-900 to-cyan-950/70 p-6 shadow-2xl shadow-blue-950/30">
               <div className={`flex flex-col gap-6 ${isPaid ? "items-center text-center" : ""}`}>
                 <div>
                   {!isPaid ? (
