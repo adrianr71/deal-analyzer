@@ -107,6 +107,8 @@ export default function App() {
   const [authChecked, setAuthChecked] = useState(false);
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [showAccountSetup, setShowAccountSetup] = useState(false);
   const [subscriptionChecked, setSubscriptionChecked] = useState(false);
 
 useEffect(() => {
@@ -138,12 +140,17 @@ useEffect(() => {
 async function handleSignUp() {
   const email = authEmail.trim();
 
-  if (!email || !authPassword) {
-    alert("Please enter an email and password.");
+  if (!email) {
+    alert("Please enter your email address.");
     return;
   }
 
-  const { error } = await supabase.auth.signUp({
+  if (!authPassword || authPassword.length < 6) {
+    alert("Please create a password with at least 6 characters.");
+    return;
+  }
+
+  const { data, error } = await supabase.auth.signUp({
     email,
     password: authPassword,
   });
@@ -153,7 +160,19 @@ async function handleSignUp() {
     return;
   }
 
-  alert("Account created. Please check your email if confirmation is required.");
+  if (!data.session) {
+    alert(
+      "Account created. Please check your email to confirm your account, then sign in to continue."
+    );
+    return;
+  }
+
+  setAuthPassword("");
+  setShowAccountSetup(false);
+
+  if (selectedPlan) {
+    await startStripeCheckout(selectedPlan);
+  }
 }
 
 async function handleSignIn() {
@@ -177,13 +196,29 @@ async function handleSignIn() {
   setAuthPassword("");
 }
 
-async function handleSignOut() {
-  const { error } = await supabase.auth.signOut({
-    scope: "local",
+async function handleSignIn() {
+  const email = authEmail.trim();
+
+  if (!email || !authPassword) {
+    alert("Please enter your email and password.");
+    return;
+  }
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password: authPassword,
   });
 
   if (error) {
     alert(error.message);
+    return;
+  }
+
+  setAuthPassword("");
+  setShowAccountSetup(false);
+
+  if (selectedPlan) {
+    await startStripeCheckout(selectedPlan);
   }
 }
 
@@ -370,6 +405,16 @@ function handleReportBrandingChange(nextBranding) {
 
 
 async function startStripeCheckout(plan = "individual") {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.user) {
+    setSelectedPlan(plan);
+    setShowAccountSetup(true);
+    return;
+  }
+
   try {
     const response = await fetch("/api/create-checkout-session", {
       method: "POST",
@@ -575,73 +620,7 @@ function handlePrintSummary() {
   investment metrics commonly used by investors,
   mortgage professionals, and DSCR loan providers.
 </p>            
-{authChecked && (
-  <div className="mt-5 rounded-2xl border border-slate-700 bg-slate-950/40 p-4">
-    {authUser ? (
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-green-300">
-            Signed In
-          </div>
 
-          <div className="mt-1 text-sm text-slate-300">
-            {authUser.email}
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={handleSignOut}
-          className="rounded-xl border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
-        >
-          Sign Out
-        </button>
-      </div>
-    ) : (
-      <>
-        <div className="text-sm font-semibold text-white">
-          Account Access
-        </div>
-
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <input
-            type="email"
-            value={authEmail}
-            onChange={(event) => setAuthEmail(event.target.value)}
-            placeholder="Email address"
-            className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-400"
-          />
-
-          <input
-            type="password"
-            value={authPassword}
-            onChange={(event) => setAuthPassword(event.target.value)}
-            placeholder="Password"
-            className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-400"
-          />
-        </div>
-
-        <div className="mt-3 flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={handleSignIn}
-            className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-black transition hover:bg-cyan-400"
-          >
-            Sign In
-          </button>
-
-          <button
-            type="button"
-            onClick={handleSignUp}
-            className="rounded-xl border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
-          >
-            Create Account
-          </button>
-        </div>
-      </>
-    )}
-  </div>
-)}
 <div className="mt-5 overflow-hidden rounded-3xl border border-blue-500/40 bg-gradient-to-r from-blue-950/80 via-slate-900 to-cyan-950/70 p-6 shadow-2xl shadow-blue-950/30">
               <div className={`flex flex-col gap-6 ${isPaid ? "items-center text-center" : ""}`}>
                 <div>
@@ -701,6 +680,70 @@ function handlePrintSummary() {
 
 {!isPaid && (
   <div className="w-full">
+
+{showAccountSetup && (
+  <div className="mb-5 rounded-2xl border border-cyan-400/30 bg-slate-950/60 p-5">
+    <div className="text-lg font-semibold text-white">
+      {selectedPlan === "team_5"
+        ? "Continue with Team 5"
+        : selectedPlan === "team_10"
+        ? "Continue with Team 10"
+        : "Continue with Individual"}
+    </div>
+
+    <div className="mt-2 text-sm leading-6 text-slate-400">
+      New customer? Enter your email and create a password with at least 6 characters.
+      Already have an account? Enter your existing email and password and choose Sign In.
+    </div>
+
+    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <input
+        type="email"
+        value={authEmail}
+        onChange={(event) => setAuthEmail(event.target.value)}
+        placeholder="Email address"
+        className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-400"
+      />
+
+      <input
+        type="password"
+        value={authPassword}
+        onChange={(event) => setAuthPassword(event.target.value)}
+        placeholder="Password — minimum 6 characters"
+        className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-400"
+      />
+    </div>
+
+    <div className="mt-4 flex flex-wrap gap-3">
+      <button
+        type="button"
+        onClick={handleSignUp}
+        className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-black transition hover:bg-cyan-400"
+      >
+        Create Account & Continue
+      </button>
+
+      <button
+        type="button"
+        onClick={handleSignIn}
+        className="rounded-xl border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
+      >
+        Sign In & Continue
+      </button>
+
+      <button
+        type="button"
+        onClick={() => {
+          setShowAccountSetup(false);
+          setSelectedPlan(null);
+        }}
+        className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-400 transition hover:text-white"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+)}
 
     <div className="mt-6 grid gap-5 md:grid-cols-3">
 
