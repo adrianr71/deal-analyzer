@@ -247,33 +247,43 @@ if (data.subscriptionId) {
 
 setIsSubscribed(true);
 
-const entitlementQuery = data.customerId
-  ? `customer_id=${encodeURIComponent(data.customerId)}`
-  : data.subscriptionId
-  ? `subscription_id=${encodeURIComponent(data.subscriptionId)}`
-  : "";
+try {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-if (entitlementQuery) {
-  try {
+  if (session?.access_token) {
     const entitlementResponse = await fetch(
-      `/api/get-subscription-status?${entitlementQuery}`
+      "/api/get-subscription-status",
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      }
     );
 
     const entitlementData = await entitlementResponse.json();
 
     if (entitlementResponse.ok && entitlementData.subscribed) {
-      setSubscriptionPlan(entitlementData.plan || "individual");
-      setMaxUsers(Number(entitlementData.maxUsers) || 1);
+      setSubscriptionPlan(
+        entitlementData.plan || "individual"
+      );
+
+      setMaxUsers(
+        Number(entitlementData.maxUsers) || 1
+      );
+
       setMaxDevicesPerUser(
         Number(entitlementData.maxDevicesPerUser) || 2
       );
     }
-  } catch (entitlementError) {
-    console.error(
-      "Subscription entitlement lookup failed:",
-      entitlementError
-    );
   }
+} catch (entitlementError) {
+  console.error(
+    "Subscription entitlement lookup failed:",
+    entitlementError
+  );
 }
 
 window.history.replaceState({}, "", "/agents");
@@ -290,55 +300,68 @@ window.history.replaceState({}, "", "/agents");
 }, []);
 
 useEffect(() => {
-  async function checkSavedSubscription() {
-    const customerId = localStorage.getItem("stripe_customer_id");
-    const subscriptionId = localStorage.getItem("stripe_subscription_id");
+ async function checkSavedSubscription() {
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
-    if (!customerId && !subscriptionId) {
+    if (!session?.user || !session?.access_token) {
+      localStorage.removeItem("subscribed");
+
+      setIsSubscribed(false);
+      setSubscriptionPlan("individual");
+      setMaxUsers(1);
+      setMaxDevicesPerUser(2);
+
+      return;
+    }
+
+    const response = await fetch(
+      "/api/get-subscription-status",
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.ok && data.subscribed) {
+      localStorage.setItem("subscribed", "true");
+
+      setIsSubscribed(true);
+
+      setSubscriptionPlan(data.plan || "individual");
+      setMaxUsers(Number(data.maxUsers) || 1);
+      setMaxDevicesPerUser(
+        Number(data.maxDevicesPerUser) || 2
+      );
+    } else {
+      localStorage.removeItem("subscribed");
+
+      setIsSubscribed(false);
+      setSubscriptionPlan("individual");
+      setMaxUsers(1);
+      setMaxDevicesPerUser(2);
+    }
+  } catch (error) {
+    console.error(
+      "Saved subscription check failed:",
+      error
+    );
+
     localStorage.removeItem("subscribed");
+
     setIsSubscribed(false);
     setSubscriptionPlan("individual");
     setMaxUsers(1);
     setMaxDevicesPerUser(2);
+  } finally {
     setSubscriptionChecked(true);
-    return;
-}
-
-try {
-  const query = customerId
-    ? `customer_id=${encodeURIComponent(customerId)}`
-    : `subscription_id=${encodeURIComponent(subscriptionId)}`;
-
-  const response = await fetch(`/api/get-subscription-status?${query}`);
-  const data = await response.json();
-
-if (response.ok && data.subscribed) {
-  localStorage.setItem("subscribed", "true");
-
-  setIsSubscribed(true);
-
-  setSubscriptionPlan(data.plan || "individual");
-  setMaxUsers(Number(data.maxUsers) || 1);
-  setMaxDevicesPerUser(Number(data.maxDevicesPerUser) || 2);
-} else {
-  localStorage.removeItem("subscribed");
-
-  setIsSubscribed(false);
-
-  setSubscriptionPlan("individual");
-  setMaxUsers(1);
-  setMaxDevicesPerUser(2);
-}
-} catch (error) {
-  console.error("Saved subscription check failed:", error);
-localStorage.removeItem("subscribed");
-setIsSubscribed(false);
-setSubscriptionPlan("individual");
-setMaxUsers(1);
-setMaxDevicesPerUser(2);
-} finally {
-  setSubscriptionChecked(true);
-}
+  }
 }
 
   checkSavedSubscription();
@@ -409,7 +432,7 @@ async function startStripeCheckout(plan = "individual") {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (!session?.user) {
+  if (!session?.user || !session?.access_token) {
     setSelectedPlan(plan);
     setShowAccountSetup(true);
     return;
@@ -420,6 +443,7 @@ async function startStripeCheckout(plan = "individual") {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({
         plan,

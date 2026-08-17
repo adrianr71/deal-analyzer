@@ -37,6 +37,8 @@ async function saveSubscription(subscription, eventId) {
 const priceId = subscription.items?.data?.[0]?.price?.id || null;
 const email = await getCustomerEmail(subscription.customer);
 
+const userId = subscription.metadata?.user_id || null;
+
 const plan = subscription.metadata?.plan || "individual";
 
 const maxUsers =
@@ -61,6 +63,7 @@ const body = {
   stripe_subscription_id: subscription.id,
   stripe_price_id: priceId,
 
+  user_id: userId,  
   plan,
   max_users: maxUsers,
   max_devices_per_user: maxDevicesPerUser,

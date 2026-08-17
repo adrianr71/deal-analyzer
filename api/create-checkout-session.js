@@ -1,6 +1,18 @@
 import Stripe from "stripe";
+import { createClient } from "@supabase/supabase-js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+const supabaseAdmin = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  }
+);
 
 const PLAN_CONFIG = {
   individual: {
@@ -32,6 +44,49 @@ export default async function handler(req, res) {
   }
 
   try {
+    if (
+      !process.env.SUPABASE_URL ||
+      !process.env.SUPABASE_SERVICE_ROLE_KEY
+    ) {
+      console.error("Missing server-side Supabase environment variables");
+
+      return res.status(500).json({
+        error: "Server authentication is not configured",
+      });
+    }
+
+    const authHeader = req.headers.authorization || "";
+
+    if (!authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        error: "Authentication required",
+      });
+    }
+
+    const accessToken = authHeader.slice(7).trim();
+
+    if (!accessToken) {
+      return res.status(401).json({
+        error: "Authentication required",
+      });
+    }
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabaseAdmin.auth.getUser(accessToken);
+
+    if (userError || !user) {
+      console.error(
+        "Supabase user verification failed:",
+        userError
+      );
+
+      return res.status(401).json({
+        error: "Invalid or expired authentication",
+      });
+    }
+
     const requestedPlan = String(
       req.body?.plan || "individual"
     ).trim();
@@ -60,53 +115,58 @@ export default async function handler(req, res) {
         ? `https://${process.env.VERCEL_URL}`
         : "https://www.rentaldealscreener.pro");
 
-    const session =
-      await stripe.checkout.sessions.create({
-        mode: "subscription",
+    const userEmail = user.email || "";
 
-        payment_method_types: ["card"],
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
 
-        automatic_tax: {
-          enabled: true,
+      payment_method_types: ["card"],
+
+      automatic_tax: {
+        enabled: true,
+      },
+
+      line_items: [
+        {
+          price: selectedPlan.priceId,
+          quantity: 1,
         },
+      ],
 
-        line_items: [
-          {
-            price: selectedPlan.priceId,
-            quantity: 1,
-          },
-        ],
+      billing_address_collection: "auto",
 
-        billing_address_collection: "auto",
+      allow_promotion_codes: true,
 
-        allow_promotion_codes: true,
+      metadata: {
+        user_id: user.id,
+        user_email: userEmail,
+        plan: requestedPlan,
+        max_users: String(selectedPlan.maxUsers),
+        max_devices_per_user: String(
+          selectedPlan.maxDevicesPerUser
+        ),
+      },
 
+      subscription_data: {
         metadata: {
+          user_id: user.id,
+          user_email: userEmail,
           plan: requestedPlan,
           max_users: String(selectedPlan.maxUsers),
           max_devices_per_user: String(
             selectedPlan.maxDevicesPerUser
           ),
         },
+      },
 
-        subscription_data: {
-          metadata: {
-            plan: requestedPlan,
-            max_users: String(selectedPlan.maxUsers),
-            max_devices_per_user: String(
-              selectedPlan.maxDevicesPerUser
-            ),
-          },
-        },
+      success_url:
+        `${origin}/agents` +
+        "?checkout=success" +
+        "&session_id={CHECKOUT_SESSION_ID}",
 
-        success_url:
-          `${origin}/agents` +
-          "?checkout=success" +
-          "&session_id={CHECKOUT_SESSION_ID}",
-
-        cancel_url:
-          `${origin}/agents?checkout=cancel`,
-      });
+      cancel_url:
+        `${origin}/agents?checkout=cancel`,
+    });
 
     return res.status(200).json({
       url: session.url,
