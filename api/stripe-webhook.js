@@ -78,26 +78,80 @@ const body = {
   last_event_id: eventId,
   updated_at: new Date().toISOString(),
 };
-  const supabaseUrl = String(process.env.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
+const supabaseUrl = String(
+  process.env.SUPABASE_URL ||
+  process.env.VITE_SUPABASE_URL ||
+  ""
+)
+  .trim()
+  .replace(/\/$/, "");
 
-  const response = await fetch(
-   `${supabaseUrl}/rest/v1/subscriptions?on_conflict=stripe_subscription_id`,
+const serviceRoleKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+const response = await fetch(
+  `${supabaseUrl}/rest/v1/subscriptions?on_conflict=stripe_subscription_id`,
+  {
+    method: "POST",
+    headers: {
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`,
+      "Content-Type": "application/json",
+      Prefer: "resolution=merge-duplicates,return=representation",
+    },
+    body: JSON.stringify(body),
+  }
+);
+
+if (!response.ok) {
+  const text = await response.text();
+
+  throw new Error(
+    `Supabase subscription save failed: ${text}`
+  );
+}
+
+const savedSubscriptions = await response.json();
+const savedSubscription = savedSubscriptions?.[0];
+
+if (
+  savedSubscription?.id &&
+  userId &&
+  email &&
+  (
+    subscription.status === "active" ||
+    subscription.status === "trialing"
+  )
+) {
+  const ownerResponse = await fetch(
+    `${supabaseUrl}/rest/v1/team_members?on_conflict=subscription_id,email`,
     {
       method: "POST",
       headers: {
-        apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-        Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
         "Content-Type": "application/json",
         Prefer: "resolution=merge-duplicates,return=minimal",
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        subscription_id: savedSubscription.id,
+        user_id: userId,
+        email,
+        role: "owner",
+        status: "active",
+        updated_at: new Date().toISOString(),
+      }),
     }
   );
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Supabase subscription save failed: ${text}`);
+  if (!ownerResponse.ok) {
+    const text = await ownerResponse.text();
+
+    throw new Error(
+      `Supabase team owner save failed: ${text}`
+    );
   }
+}
 }
 
 export default async function handler(req, res) {
