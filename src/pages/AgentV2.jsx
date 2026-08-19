@@ -515,33 +515,47 @@ async function startStripeCheckout(plan = "individual") {
 }
 
   async function openCustomerPortal() {
-  const customerId = localStorage.getItem("stripe_customer_id");
-
-  if (!customerId) {
-    alert("Subscription account not found. Please contact support.");
-    return;
-  }
-
   try {
-    const response = await fetch("/api/create-portal-session", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ customerId }),
-    });
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.access_token) {
+      alert("Please sign in again to manage your subscription.");
+      return;
+    }
+
+    const response = await fetch(
+      "/api/create-portal-session",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     const data = await response.json();
 
     if (!response.ok || !data.url) {
-      alert("Unable to open subscription management. Please try again.");
+      alert(
+        data.error ||
+          "Unable to open subscription management. Please try again."
+      );
       return;
     }
 
     window.location.href = data.url;
   } catch (error) {
-    console.error("Customer portal error:", error);
-    alert("Unable to open subscription management. Please try again.");
+    console.error(
+      "Customer portal error:",
+      error
+    );
+
+    alert(
+      "Unable to open subscription management. Please try again."
+    );
   }
 }
 async function runFreeTrialBatch() {
@@ -732,16 +746,15 @@ function handlePrintSummary() {
     : "Renews monthly. Cancel anytime. Access remains active through the end of the billing period."}
 </div>
 
-{accessRole !== "member" &&
-  localStorage.getItem("stripe_customer_id") && (
-    <button
-      type="button"
-      onClick={openCustomerPortal}
-      className="mt-4 rounded-xl border border-green-400/40 bg-green-500/10 px-4 py-2 text-sm font-semibold text-green-200 transition hover:bg-green-500/20"
-    >
-      Manage Subscription
-    </button>
-  )}
+{accessRole !== "member" && (
+  <button
+    type="button"
+    onClick={openCustomerPortal}
+    className="mt-4 rounded-xl border border-green-400/40 bg-green-500/10 px-4 py-2 text-sm font-semibold text-green-200 transition hover:bg-green-500/20"
+  >
+    Manage Subscription
+  </button>
+)}
 </>
 )}
 {!isPaid && (
