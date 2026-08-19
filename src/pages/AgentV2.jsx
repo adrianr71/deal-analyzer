@@ -813,7 +813,7 @@ function handlePrintSummary() {
     ? "Continue with Team 10"
     : selectedPlan === "individual"
     ? "Continue with Individual"
-: "Sign In"
+    : "Sign In"}
 </div>
 
 <div className="mt-2 text-sm leading-6 text-slate-400">
