@@ -204,7 +204,10 @@ async function handleSignIn() {
     return;
   }
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const {
+    data: signInData,
+    error,
+  } = await supabase.auth.signInWithPassword({
     email,
     password: authPassword,
   });
@@ -217,11 +220,53 @@ async function handleSignIn() {
   setAuthPassword("");
   setShowAccountSetup(false);
 
+  const session = signInData?.session;
+
+  if (!selectedPlan && session?.access_token) {
+    try {
+      const activationResponse = await fetch(
+        "/api/activate-team-membership",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      );
+
+      const activationData = await activationResponse.json();
+
+      if (
+        !activationResponse.ok &&
+        activationResponse.status !== 404
+      ) {
+        console.error(
+          "Team membership activation failed:",
+          activationData
+        );
+
+        alert(
+          activationData.error ||
+            "Unable to activate team membership."
+        );
+
+        return;
+      }
+    } catch (activationError) {
+      console.error(
+        "Team membership activation failed:",
+        activationError
+      );
+
+      alert("Unable to activate team membership.");
+      return;
+    }
+  }
+
   if (selectedPlan) {
     await startStripeCheckout(selectedPlan);
   }
 }
-
 useEffect(() => {
   async function verifyStripeSuccess() {
     const params = new URLSearchParams(window.location.search);
@@ -707,18 +752,21 @@ function handlePrintSummary() {
 
 {showAccountSetup && (
   <div className="mb-5 rounded-2xl border border-cyan-400/30 bg-slate-950/60 p-5">
-    <div className="text-lg font-semibold text-white">
-      {selectedPlan === "team_5"
-        ? "Continue with Team 5"
-        : selectedPlan === "team_10"
-        ? "Continue with Team 10"
-        : "Continue with Individual"}
-    </div>
+<div className="text-lg font-semibold text-white">
+  {selectedPlan === "team_5"
+    ? "Continue with Team 5"
+    : selectedPlan === "team_10"
+    ? "Continue with Team 10"
+    : selectedPlan === "individual"
+    ? "Continue with Individual"
+    : "Team Member Access"}
+</div>
 
-    <div className="mt-2 text-sm leading-6 text-slate-400">
-      New customer? Enter your email and create a password with at least 6 characters.
-      Already have an account? Enter your existing email and password and choose Sign In.
-    </div>
+<div className="mt-2 text-sm leading-6 text-slate-400">
+  {selectedPlan
+    ? "New customer? Enter your email and create a password with at least 6 characters. Already have an account? Enter your existing email and password and choose Sign In."
+    : "Were you invited to a team? Sign in with the exact email address that received the invitation. If you do not have an account yet, create one using that same email address."}
+</div>
 
     <div className="mt-4 grid gap-3 sm:grid-cols-2">
       <input
@@ -766,6 +814,21 @@ function handlePrintSummary() {
         Cancel
       </button>
     </div>
+  </div>
+)}
+
+{!showAccountSetup && (
+  <div className="mb-5 text-center">
+    <button
+      type="button"
+      onClick={() => {
+        setSelectedPlan(null);
+        setShowAccountSetup(true);
+      }}
+      className="text-sm font-semibold text-cyan-300 transition hover:text-cyan-200"
+    >
+      Already invited to a team? Sign in here
+    </button>
   </div>
 )}
 
