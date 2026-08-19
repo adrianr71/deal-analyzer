@@ -694,20 +694,48 @@ function handlePrintSummary() {
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 p-6 text-white">
       <div className="mx-auto max-w-7xl">
         <div className="mb-6 flex flex-col gap-5">
-          <header>
-            <h1 className="text-3xl font-bold">
-  Rental Deal Screener Pro
-</h1>
+<header>
+  <div className="flex items-start justify-between gap-6">
+    <div>
+      <h1 className="text-3xl font-bold">
+        Rental Deal Screener Pro
+      </h1>
 
-<p className="mt-1 text-lg font-medium text-cyan-300">
-  For Real Estate Agents
-</p>
-<p className="mt-1 text-sm text-slate-400">
-  Bulk analyze rental properties in seconds using NOI,
-  Cap Rate, Cash Flow, DSCR, CoC Return, and lender-focused
-  investment metrics commonly used by investors,
-  mortgage professionals, and DSCR loan providers.
-</p>            
+      <p className="mt-1 text-lg font-medium text-cyan-300">
+        For Real Estate Agents
+      </p>
+    </div>
+
+    <div className="shrink-0">
+      {authUser ? (
+        <button
+          type="button"
+          onClick={handleSignOut}
+          className="rounded-xl border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
+        >
+          Sign Out
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            setSelectedPlan(null);
+            setShowAccountSetup(true);
+          }}
+          className="rounded-xl border border-cyan-400/40 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-200 transition hover:bg-cyan-500/20"
+        >
+          Sign In
+        </button>
+      )}
+    </div>
+  </div>
+
+  <p className="mt-3 text-sm text-slate-400">
+    Bulk analyze rental properties in seconds using NOI,
+    Cap Rate, Cash Flow, DSCR, CoC Return, and lender-focused
+    investment metrics commonly used by investors,
+    mortgage professionals, and DSCR loan providers.
+  </p>          
 
 <div className="mt-5 overflow-hidden rounded-3xl border border-blue-500/40 bg-gradient-to-r from-blue-950/80 via-slate-900 to-cyan-950/70 p-6 shadow-2xl shadow-blue-950/30">
               <div className={`flex flex-col gap-6 ${isPaid ? "items-center text-center" : ""}`}>
@@ -785,13 +813,13 @@ function handlePrintSummary() {
     ? "Continue with Team 10"
     : selectedPlan === "individual"
     ? "Continue with Individual"
-    : "Team Member Access"}
+: "Sign In"
 </div>
 
 <div className="mt-2 text-sm leading-6 text-slate-400">
   {selectedPlan
     ? "New customer? Enter your email and create a password with at least 6 characters. Already have an account? Enter your existing email and password and choose Sign In."
-    : "Were you invited to a team? Sign in with the exact email address that received the invitation. If you do not have an account yet, create one using that same email address."}
+: "Sign in with your existing account. Team members should use the exact email address that received the invitation."}
 </div>
 
     <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -812,51 +840,39 @@ function handlePrintSummary() {
       />
     </div>
 
-    <div className="mt-4 flex flex-wrap gap-3">
-      <button
-        type="button"
-        onClick={handleSignUp}
-        className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-black transition hover:bg-cyan-400"
-      >
-        Create Account & Continue
-      </button>
-
-      <button
-        type="button"
-        onClick={handleSignIn}
-        className="rounded-xl border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
-      >
-        Sign In & Continue
-      </button>
-
-      <button
-        type="button"
-        onClick={() => {
-          setShowAccountSetup(false);
-          setSelectedPlan(null);
-        }}
-        className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-400 transition hover:text-white"
-      >
-        Cancel
-      </button>
-    </div>
-  </div>
-)}
-
-{!showAccountSetup && (
-  <div className="mb-5 text-center">
+<div className="mt-4 flex flex-wrap gap-3">
+  {selectedPlan && (
     <button
       type="button"
-      onClick={() => {
-        setSelectedPlan(null);
-        setShowAccountSetup(true);
-      }}
-      className="text-sm font-semibold text-cyan-300 transition hover:text-cyan-200"
+      onClick={handleSignUp}
+      className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-black transition hover:bg-cyan-400"
     >
-      Already invited to a team? Sign in here
+      Create Account & Continue
     </button>
+  )}
+
+  <button
+    type="button"
+    onClick={handleSignIn}
+    className="rounded-xl border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
+  >
+    Sign In & Continue
+  </button>
+
+  <button
+    type="button"
+    onClick={() => {
+      setShowAccountSetup(false);
+      setSelectedPlan(null);
+    }}
+    className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-400 transition hover:text-white"
+  >
+    Cancel
+  </button>
+</div>
   </div>
 )}
+
 
     <div className="mt-6 grid gap-5 md:grid-cols-3">
 
