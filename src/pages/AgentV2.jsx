@@ -99,12 +99,12 @@ export default function App() {
   const [importSummary, setImportSummary] = useState(null);
   const [reportBranding, setReportBranding] = useState(() => loadReportBranding());
   const [taxOverrides, setTaxOverrides] = useState({});
-  const [isSubscribed, setIsSubscribed] = useState(false);
-  const [subscriptionPlan, setSubscriptionPlan] = useState("individual");
-  const [maxUsers, setMaxUsers] = useState(1);
-  const [maxDevicesPerUser, setMaxDevicesPerUser] = useState(2);
-  const [authUser, setAuthUser] = useState(null);
-  const [authChecked, setAuthChecked] = useState(false);
+const [isSubscribed, setIsSubscribed] = useState(false);
+const [subscriptionPlan, setSubscriptionPlan] = useState("individual");
+const [maxUsers, setMaxUsers] = useState(1);
+const [maxDevicesPerUser, setMaxDevicesPerUser] = useState(2);
+const [accessRole, setAccessRole] = useState(null);
+const [authUser, setAuthUser] = useState(null);  const [authChecked, setAuthChecked] = useState(false);
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -322,6 +322,7 @@ try {
       setMaxDevicesPerUser(
         Number(entitlementData.maxDevicesPerUser) || 2
       );
+setAccessRole(entitlementData.accessRole || "owner");
     }
   }
 } catch (entitlementError) {
@@ -358,6 +359,7 @@ useEffect(() => {
       setSubscriptionPlan("individual");
       setMaxUsers(1);
       setMaxDevicesPerUser(2);
+      setAccessRole(null);
 
       return;
     }
@@ -384,6 +386,7 @@ useEffect(() => {
       setMaxDevicesPerUser(
         Number(data.maxDevicesPerUser) || 2
       );
+setAccessRole(data.accessRole || "owner");
     } else {
       localStorage.removeItem("subscribed");
 
@@ -391,6 +394,7 @@ useEffect(() => {
       setSubscriptionPlan("individual");
       setMaxUsers(1);
       setMaxDevicesPerUser(2);
+      setAccessRole(null);
     }
   } catch (error) {
     console.error(
@@ -404,6 +408,7 @@ useEffect(() => {
     setSubscriptionPlan("individual");
     setMaxUsers(1);
     setMaxDevicesPerUser(2);
+    setAccessRole(null);
   } finally {
     setSubscriptionChecked(true);
   }
@@ -711,12 +716,24 @@ function handlePrintSummary() {
   </>
 ) : (
 <>
-  <div className="inline-flex items-center rounded-full border border-green-400/30 bg-green-500/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-green-300">Professional Access Active</div>
-  <div className="mt-4 text-xl font-semibold text-green-300">Unlimited Batch Analysis</div>
-  <div className="mt-2 max-w-xl text-sm leading-6 text-slate-400">
-    Renews monthly. Cancel anytime. Access remains active through the end of the billing period.
-  </div>
-  {localStorage.getItem("stripe_customer_id") ? (
+<div className="inline-flex items-center rounded-full border border-green-400/30 bg-green-500/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-green-300">
+  {accessRole === "member"
+    ? "Team Access Active"
+    : "Professional Access Active"}
+</div>
+
+<div className="mt-4 text-xl font-semibold text-green-300">
+  Unlimited Batch Analysis
+</div>
+
+<div className="mt-2 max-w-xl text-sm leading-6 text-slate-400">
+  {accessRole === "member"
+    ? "Your access is provided through your team's active subscription."
+    : "Renews monthly. Cancel anytime. Access remains active through the end of the billing period."}
+</div>
+
+{accessRole !== "member" &&
+  localStorage.getItem("stripe_customer_id") && (
     <button
       type="button"
       onClick={openCustomerPortal}
@@ -724,10 +741,6 @@ function handlePrintSummary() {
     >
       Manage Subscription
     </button>
-  ) : (
-    <div className="mt-4 text-xs text-slate-500">
-      Developer access active
-    </div>
   )}
 </>
 )}
