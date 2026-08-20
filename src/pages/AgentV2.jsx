@@ -137,65 +137,6 @@ useEffect(() => {
   };
 }, []);
 
-async function handleSignUp() {
-  const email = authEmail.trim();
-
-  if (!email) {
-    alert("Please enter your email address.");
-    return;
-  }
-
-  if (!authPassword || authPassword.length < 6) {
-    alert("Please create a password with at least 6 characters.");
-    return;
-  }
-
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password: authPassword,
-  });
-
-  if (error) {
-    alert(error.message);
-    return;
-  }
-
-  if (!data.session) {
-    alert(
-      "Account created. Please check your email to confirm your account, then sign in to continue."
-    );
-    return;
-  }
-
-  setAuthPassword("");
-  setShowAccountSetup(false);
-
-  if (selectedPlan) {
-    await startStripeCheckout(selectedPlan);
-  }
-}
-
-async function handleSignIn() {
-  const email = authEmail.trim();
-
-  if (!email || !authPassword) {
-    alert("Please enter an email and password.");
-    return;
-  }
-
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password: authPassword,
-  });
-
-  if (error) {
-    alert(error.message);
-    return;
-  }
-
-  setAuthPassword("");
-}
-
 async function handleSignIn() {
   const email = authEmail.trim();
 
@@ -267,7 +208,38 @@ async function handleSignIn() {
     await startStripeCheckout(selectedPlan);
   }
 }
-useEffect(() => {
+
+async function handleSignOut() {
+  try {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.error("Supabase sign out failed:", error);
+      alert("Unable to sign out. Please try again.");
+      return;
+    }
+
+    localStorage.removeItem("subscribed");
+    localStorage.removeItem("stripe_customer_id");
+    localStorage.removeItem("stripe_subscription_id");
+
+    setAuthUser(null);
+    setIsSubscribed(false);
+    setSubscriptionPlan("individual");
+    setMaxUsers(1);
+    setMaxDevicesPerUser(2);
+    setAccessRole(null);
+    setSelectedPlan(null);
+    setShowAccountSetup(false);
+
+    window.location.reload();
+  } catch (error) {
+    console.error("Sign out failed:", error);
+    alert("Unable to sign out. Please try again.");
+  }
+}
+
+ useEffect(() => {
   async function verifyStripeSuccess() {
     const params = new URLSearchParams(window.location.search);
     const checkoutSuccess = params.get("checkout") === "success" || params.get("success") === "true";
