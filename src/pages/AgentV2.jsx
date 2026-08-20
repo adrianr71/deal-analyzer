@@ -860,22 +860,23 @@ function handlePrintSummary() {
   </>
 ) : (
 <>
-  <div className="flex w-full items-center justify-between gap-4">
-    <div className="inline-flex items-center rounded-full border border-green-400/30 bg-green-500/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-green-300">
-      {accessRole === "member"
-        ? "Team Access Active"
-        : "Professional Access Active"}
-    </div>
+<div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-4">
+  <div />
 
-    <button
-      type="button"
-      onClick={() => setShowAccessPanel((prev) => !prev)}
-      className="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs text-slate-300 transition hover:bg-slate-800 hover:text-white"
-    >
-      {showAccessPanel ? "Hide Access ▲" : "Show Access ▼"}
-    </button>
+  <div className="inline-flex items-center justify-self-center rounded-full border border-green-400/30 bg-green-500/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-green-300">
+    {accessRole === "member"
+      ? "Team Access Active"
+      : "Professional Access Active"}
   </div>
 
+  <button
+    type="button"
+    onClick={() => setShowAccessPanel((prev) => !prev)}
+    className="justify-self-end rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs text-slate-300 transition hover:bg-slate-800 hover:text-white"
+  >
+    {showAccessPanel ? "Hide Access ▲" : "Show Access ▼"}
+  </button>
+</div>
   {showAccessPanel && (
     <div className="flex flex-col items-center text-center">
       <div className="mt-4 text-xl font-semibold text-green-300">
@@ -1148,40 +1149,41 @@ function handlePrintSummary() {
   (subscriptionPlan === "team_5" ||
     subscriptionPlan === "team_10") && (
     <section className="rounded-2xl border border-amber-400/30 bg-slate-950/70 p-5">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <div className="text-lg font-semibold text-white">
-            Team Management
-          </div>
+<div className="grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-center">
+  <div className="justify-self-start">
+    <div className="text-lg font-semibold text-white">
+      Team Management
+    </div>
 
-          {showTeamPanel && (
-            <div className="mt-1 text-sm text-slate-400">
-              Manage team seats and invitations for your subscription.
-            </div>
-          )}
+    {showTeamPanel && (
+      <div className="mt-1 text-sm text-slate-400">
+        Manage team seats and invitations for your subscription.
+      </div>
+    )}
+  </div>
+
+  <div className="flex flex-wrap items-center justify-center gap-2">
+    {showTeamPanel && teamData && (
+      <>
+        <div className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-xs text-slate-300">
+          {teamData.usedSeats} of {teamData.maxUsers} seats used
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {showTeamPanel && teamData && (
-            <>
-              <div className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-xs text-slate-300">
-                {teamData.usedSeats} of {teamData.maxUsers} seats used
-              </div>
-
-              <div className="rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-xs text-green-300">
-                {teamData.remainingSeats} seats remaining
-              </div>
-            </>
-          )}
-
-          <button
-            type="button"
-            onClick={() => setShowTeamPanel((prev) => !prev)}
-            className="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs text-slate-300 transition hover:bg-slate-800 hover:text-white"
-          >
-            {showTeamPanel ? "Hide Team ▲" : "Show Team ▼"}
-          </button>
+        <div className="rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-xs text-green-300">
+          {teamData.remainingSeats} seats remaining
         </div>
+      </>
+    )}
+  </div>
+
+  <button
+    type="button"
+    onClick={() => setShowTeamPanel((prev) => !prev)}
+    className="justify-self-end rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs text-slate-300 transition hover:bg-slate-800 hover:text-white"
+  >
+    {showTeamPanel ? "Hide Team ▲" : "Show Team ▼"}
+  </button>
+</div>
       </div>
 
       {showTeamPanel && (
