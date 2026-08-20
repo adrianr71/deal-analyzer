@@ -318,6 +318,7 @@ window.history.replaceState({}, "", "/agents");
 }, []);
 
 useEffect(() => {
+  setSubscriptionChecked(false);
  async function checkSavedSubscription() {
   try {
     const {
@@ -358,7 +359,7 @@ useEffect(() => {
       setMaxDevicesPerUser(
         Number(data.maxDevicesPerUser) || 2
       );
-setAccessRole(data.accessRole || "owner");
+      setAccessRole(data.accessRole || "owner");
     } else {
       localStorage.removeItem("subscribed");
 
@@ -387,7 +388,7 @@ setAccessRole(data.accessRole || "owner");
 }
 
   checkSavedSubscription();
-}, []);
+}, [authUser?.id]);
 
   const isPaid = isSubscribed;
   const activeBatchLimit = isPaid ? AGENT_BATCH_LIMIT : AGENT_FREE_BATCH_LIMIT;   
