@@ -1184,7 +1184,6 @@ function handlePrintSummary() {
     {showTeamPanel ? "Hide Team ▲" : "Show Team ▼"}
   </button>
 </div>
-      </div>
 
       {showTeamPanel && (
         <>
