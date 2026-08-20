@@ -99,17 +99,24 @@ export default function App() {
   const [importSummary, setImportSummary] = useState(null);
   const [reportBranding, setReportBranding] = useState(() => loadReportBranding());
   const [taxOverrides, setTaxOverrides] = useState({});
-const [isSubscribed, setIsSubscribed] = useState(false);
-const [subscriptionPlan, setSubscriptionPlan] = useState("individual");
-const [maxUsers, setMaxUsers] = useState(1);
-const [maxDevicesPerUser, setMaxDevicesPerUser] = useState(2);
-const [accessRole, setAccessRole] = useState(null);
-const [authUser, setAuthUser] = useState(null);  const [authChecked, setAuthChecked] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subscriptionPlan, setSubscriptionPlan] = useState("individual");
+  const [maxUsers, setMaxUsers] = useState(1);
+  const [maxDevicesPerUser, setMaxDevicesPerUser] = useState(2);
+  const [accessRole, setAccessRole] = useState(null);
+  const [authUser, setAuthUser] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [showAccountSetup, setShowAccountSetup] = useState(false);
   const [subscriptionChecked, setSubscriptionChecked] = useState(false);
+  
+  const [teamData, setTeamData] = useState(null);
+  const [teamLoading, setTeamLoading] = useState(false);
+  const [teamError, setTeamError] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteLoading, setInviteLoading] = useState(false);
 
 useEffect(() => {
   async function loadAuthSession() {
@@ -389,6 +396,69 @@ useEffect(() => {
 
   checkSavedSubscription();
 }, [authUser?.id]);
+
+async function loadTeamMembers() {
+  const isTeamOwner =
+    isSubscribed &&
+    accessRole === "owner" &&
+    (subscriptionPlan === "team_5" ||
+      subscriptionPlan === "team_10");
+
+  if (!authUser || !isTeamOwner) {
+    setTeamData(null);
+    setTeamError("");
+    return;
+  }
+
+  setTeamLoading(true);
+  setTeamError("");
+
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.access_token) {
+      setTeamData(null);
+      setTeamError("Please sign in again to manage your team.");
+      return;
+    }
+
+    const response = await fetch("/api/get-team-members", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error || "Unable to load team members."
+      );
+    }
+
+    setTeamData(data);
+  } catch (error) {
+    console.error("Team member lookup failed:", error);
+    setTeamData(null);
+    setTeamError(
+      error.message || "Unable to load team members."
+    );
+  } finally {
+    setTeamLoading(false);
+  }
+}
+
+useEffect(() => {
+  loadTeamMembers();
+}, [
+  authUser?.id,
+  isSubscribed,
+  accessRole,
+  subscriptionPlan,
+]);
 
   const isPaid = isSubscribed;
   const activeBatchLimit = isPaid ? AGENT_BATCH_LIMIT : AGENT_FREE_BATCH_LIMIT;   
@@ -1002,6 +1072,122 @@ function handlePrintSummary() {
             </div>
           </header>
 
+{accessRole === "owner" &&
+  (subscriptionPlan === "team_5" ||
+    subscriptionPlan === "team_10") && (
+    <section className="rounded-2xl border border-amber-400/30 bg-slate-950/70 p-5">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <div className="text-lg font-semibold text-white">
+            Team Management
+          </div>
+
+          <div className="mt-1 text-sm text-slate-400">
+            Manage team seats and invitations for your subscription.
+          </div>
+        </div>
+
+        {teamData && (
+          <div className="flex flex-wrap gap-2 text-xs">
+            <div className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-slate-300">
+              {teamData.usedSeats} of {teamData.maxUsers} seats used
+            </div>
+
+            <div className="rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-green-300">
+              {teamData.remainingSeats} seats remaining
+            </div>
+          </div>
+        )}
+      </div>
+
+      {teamLoading && (
+        <div className="mt-5 text-sm text-slate-400">
+          Loading team members...
+        </div>
+      )}
+
+      {teamError && (
+        <div className="mt-5 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          {teamError}
+        </div>
+      )}
+
+      {!teamLoading && !teamError && teamData && (
+        <>
+          <div className="mt-5 overflow-hidden rounded-xl border border-slate-700">
+            <div className="grid grid-cols-[1fr_auto_auto] gap-3 bg-slate-900 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+              <div>Email</div>
+              <div>Role</div>
+              <div>Status</div>
+            </div>
+
+            <div className="divide-y divide-slate-800">
+              {teamData.members?.map((member) => (
+                <div
+                  key={member.id || member.email}
+                  className="grid grid-cols-[1fr_auto_auto] items-center gap-3 px-4 py-3 text-sm"
+                >
+                  <div className="break-all text-white">
+                    {member.email}
+                  </div>
+
+                  <div className="capitalize text-slate-300">
+                    {member.role}
+                  </div>
+
+                  <div
+                    className={
+                      member.status === "active"
+                        ? "capitalize text-green-300"
+                        : "capitalize text-amber-300"
+                    }
+                  >
+                    {member.status}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <div className="mb-2 text-sm font-medium text-white">
+              Invite Team Member
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <input
+                type="email"
+                value={inviteEmail}
+                onChange={(event) =>
+                  setInviteEmail(event.target.value)
+                }
+                placeholder="team.member@example.com"
+                className="flex-1 rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-amber-400"
+              />
+
+              <button
+                type="button"
+                disabled={
+                  inviteLoading ||
+                  !inviteEmail.trim() ||
+                  Number(teamData.remainingSeats) <= 0
+                }
+                className="rounded-xl bg-amber-400 px-5 py-3 text-sm font-semibold text-black transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {inviteLoading ? "Sending..." : "Send Invite"}
+              </button>
+            </div>
+
+            {Number(teamData.remainingSeats) <= 0 && (
+              <div className="mt-2 text-xs text-amber-300">
+                All team seats are currently in use.
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </section>
+  )}
           <section className="rounded-2xl border border-slate-700 bg-slate-950/60 p-4 text-sm text-slate-300">
             <div className="flex items-center justify-between gap-3"><div className="text-base font-semibold text-white">How It Works</div><button type="button" onClick={() => setShowInstructions((prev) => !prev)} className="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs text-slate-300 transition hover:bg-slate-800 hover:text-white">{showInstructions ? "Hide Instructions ▲" : "Show Instructions ▼"}</button></div>
             {showInstructions && <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4"><StepCard number="1" title="Import CSV File" description="Upload up to 20 properties per free trial batch. Paid access supports up to 100 properties per batch." /><StepCard number="2" title="Set Global Assumptions" description="Adjust financing, vacancy, maintenance, insurance, taxes, and rent assumptions." /><StepCard number="3" title="Analyze All Properties" description="Analyze all imported properties and calculate NOI, Cash Flow, Cap Rate, CoC, DSCR, and professional deal scores." /><StepCard number="4" title="Export or Print Results" description="Export the full analyzed CSV or print / save a PDF investment summary report for sharing and underwriting review." /></div>}
