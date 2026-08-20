@@ -118,6 +118,9 @@ export default function App() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteLoading, setInviteLoading] = useState(false);
 
+  const [showAccessPanel, setShowAccessPanel] = useState(true);
+  const [showTeamPanel, setShowTeamPanel] = useState(true);
+
 useEffect(() => {
   async function loadAuthSession() {
     const { data, error } = await supabase.auth.getSession();
@@ -448,6 +451,62 @@ async function loadTeamMembers() {
     );
   } finally {
     setTeamLoading(false);
+  }
+}
+
+async function handleInviteTeamMember() {
+  const email = inviteEmail.trim().toLowerCase();
+
+  if (!email) {
+    alert("Please enter an email address.");
+    return;
+  }
+
+  setInviteLoading(true);
+  setTeamError("");
+
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.access_token) {
+      alert("Please sign in again to invite a team member.");
+      return;
+    }
+
+    const response = await fetch("/api/invite-team-member", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        email,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error || "Unable to invite team member."
+      );
+    }
+
+    setInviteEmail("");
+
+    await loadTeamMembers();
+
+    alert(`Invitation added for ${email}.`);
+  } catch (error) {
+    console.error("Team invitation failed:", error);
+
+    alert(
+      error.message || "Unable to invite team member."
+    );
+  } finally {
+    setInviteLoading(false);
   }
 }
 
@@ -801,31 +860,45 @@ function handlePrintSummary() {
   </>
 ) : (
 <>
-<div className="inline-flex items-center rounded-full border border-green-400/30 bg-green-500/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-green-300">
-  {accessRole === "member"
-    ? "Team Access Active"
-    : "Professional Access Active"}
-</div>
+  <div className="flex w-full items-center justify-between gap-4">
+    <div className="inline-flex items-center rounded-full border border-green-400/30 bg-green-500/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-green-300">
+      {accessRole === "member"
+        ? "Team Access Active"
+        : "Professional Access Active"}
+    </div>
 
-<div className="mt-4 text-xl font-semibold text-green-300">
-  Unlimited Batch Analysis
-</div>
+    <button
+      type="button"
+      onClick={() => setShowAccessPanel((prev) => !prev)}
+      className="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs text-slate-300 transition hover:bg-slate-800 hover:text-white"
+    >
+      {showAccessPanel ? "Hide Access ▲" : "Show Access ▼"}
+    </button>
+  </div>
 
-<div className="mt-2 max-w-xl text-sm leading-6 text-slate-400">
-  {accessRole === "member"
-    ? "Your access is provided through your team's active subscription."
-    : "Renews monthly. Cancel anytime. Access remains active through the end of the billing period."}
-</div>
+  {showAccessPanel && (
+    <div className="flex flex-col items-center text-center">
+      <div className="mt-4 text-xl font-semibold text-green-300">
+        Unlimited Batch Analysis
+      </div>
 
-{accessRole !== "member" && (
-  <button
-    type="button"
-    onClick={openCustomerPortal}
-    className="mt-4 rounded-xl border border-green-400/40 bg-green-500/10 px-4 py-2 text-sm font-semibold text-green-200 transition hover:bg-green-500/20"
-  >
-    Manage Subscription
-  </button>
-)}
+      <div className="mt-2 max-w-xl text-sm leading-6 text-slate-400">
+        {accessRole === "member"
+          ? "Your access is provided through your team's active subscription."
+          : "Renews monthly. Cancel anytime. Access remains active through the end of the billing period."}
+      </div>
+
+      {accessRole !== "member" && (
+        <button
+          type="button"
+          onClick={openCustomerPortal}
+          className="mt-4 rounded-xl border border-green-400/40 bg-green-500/10 px-4 py-2 text-sm font-semibold text-green-200 transition hover:bg-green-500/20"
+        >
+          Manage Subscription
+        </button>
+      )}
+    </div>
+  )}
 </>
 )}
 {!isPaid && (
@@ -1071,7 +1144,6 @@ function handlePrintSummary() {
              </div>
             </div>
           </header>
-
 {accessRole === "owner" &&
   (subscriptionPlan === "team_5" ||
     subscriptionPlan === "team_10") && (
@@ -1082,108 +1154,125 @@ function handlePrintSummary() {
             Team Management
           </div>
 
-          <div className="mt-1 text-sm text-slate-400">
-            Manage team seats and invitations for your subscription.
-          </div>
+          {showTeamPanel && (
+            <div className="mt-1 text-sm text-slate-400">
+              Manage team seats and invitations for your subscription.
+            </div>
+          )}
         </div>
 
-        {teamData && (
-          <div className="flex flex-wrap gap-2 text-xs">
-            <div className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-slate-300">
-              {teamData.usedSeats} of {teamData.maxUsers} seats used
-            </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {showTeamPanel && teamData && (
+            <>
+              <div className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-xs text-slate-300">
+                {teamData.usedSeats} of {teamData.maxUsers} seats used
+              </div>
 
-            <div className="rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-green-300">
-              {teamData.remainingSeats} seats remaining
-            </div>
-          </div>
-        )}
+              <div className="rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-xs text-green-300">
+                {teamData.remainingSeats} seats remaining
+              </div>
+            </>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setShowTeamPanel((prev) => !prev)}
+            className="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs text-slate-300 transition hover:bg-slate-800 hover:text-white"
+          >
+            {showTeamPanel ? "Hide Team ▲" : "Show Team ▼"}
+          </button>
+        </div>
       </div>
 
-      {teamLoading && (
-        <div className="mt-5 text-sm text-slate-400">
-          Loading team members...
-        </div>
-      )}
-
-      {teamError && (
-        <div className="mt-5 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-          {teamError}
-        </div>
-      )}
-
-      {!teamLoading && !teamError && teamData && (
+      {showTeamPanel && (
         <>
-          <div className="mt-5 overflow-hidden rounded-xl border border-slate-700">
-            <div className="grid grid-cols-[1fr_auto_auto] gap-3 bg-slate-900 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-              <div>Email</div>
-              <div>Role</div>
-              <div>Status</div>
+          {teamLoading && (
+            <div className="mt-5 text-sm text-slate-400">
+              Loading team members...
             </div>
+          )}
 
-            <div className="divide-y divide-slate-800">
-              {teamData.members?.map((member) => (
-                <div
-                  key={member.id || member.email}
-                  className="grid grid-cols-[1fr_auto_auto] items-center gap-3 px-4 py-3 text-sm"
-                >
-                  <div className="break-all text-white">
-                    {member.email}
-                  </div>
+          {teamError && (
+            <div className="mt-5 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+              {teamError}
+            </div>
+          )}
 
-                  <div className="capitalize text-slate-300">
-                    {member.role}
-                  </div>
-
-                  <div
-                    className={
-                      member.status === "active"
-                        ? "capitalize text-green-300"
-                        : "capitalize text-amber-300"
-                    }
-                  >
-                    {member.status}
-                  </div>
+          {!teamLoading && !teamError && teamData && (
+            <>
+              <div className="mt-5 overflow-hidden rounded-xl border border-slate-700">
+                <div className="grid grid-cols-[1fr_auto_auto] gap-3 bg-slate-900 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  <div>Email</div>
+                  <div>Role</div>
+                  <div>Status</div>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          <div className="mt-5">
-            <div className="mb-2 text-sm font-medium text-white">
-              Invite Team Member
-            </div>
+                <div className="divide-y divide-slate-800">
+                  {teamData.members?.map((member) => (
+                    <div
+                      key={member.id || member.email}
+                      className="grid grid-cols-[1fr_auto_auto] items-center gap-3 px-4 py-3 text-sm"
+                    >
+                      <div className="break-all text-white">
+                        {member.email}
+                      </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <input
-                type="email"
-                value={inviteEmail}
-                onChange={(event) =>
-                  setInviteEmail(event.target.value)
-                }
-                placeholder="team.member@example.com"
-                className="flex-1 rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-amber-400"
-              />
+                      <div className="capitalize text-slate-300">
+                        {member.role}
+                      </div>
 
-              <button
-                type="button"
-                disabled={
-                  inviteLoading ||
-                  !inviteEmail.trim() ||
-                  Number(teamData.remainingSeats) <= 0
-                }
-                className="rounded-xl bg-amber-400 px-5 py-3 text-sm font-semibold text-black transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                {inviteLoading ? "Sending..." : "Send Invite"}
-              </button>
-            </div>
-
-            {Number(teamData.remainingSeats) <= 0 && (
-              <div className="mt-2 text-xs text-amber-300">
-                All team seats are currently in use.
+                      <div
+                        className={
+                          member.status === "active"
+                            ? "capitalize text-green-300"
+                            : "capitalize text-amber-300"
+                        }
+                      >
+                        {member.status}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            )}
-          </div>
+
+              <div className="mt-5">
+                <div className="mb-2 text-sm font-medium text-white">
+                  Invite Team Member
+                </div>
+
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(event) =>
+                      setInviteEmail(event.target.value)
+                    }
+                    placeholder="team.member@example.com"
+                    className="flex-1 rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-amber-400"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={handleInviteTeamMember}
+                    disabled={
+                      inviteLoading ||
+                      !inviteEmail.trim() ||
+                      Number(teamData.remainingSeats) <= 0
+                    }
+                    className="rounded-xl bg-amber-400 px-5 py-3 text-sm font-semibold text-black transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {inviteLoading ? "Sending..." : "Send Invite"}
+                  </button>
+                </div>
+
+                {Number(teamData.remainingSeats) <= 0 && (
+                  <div className="mt-2 text-xs text-amber-300">
+                    All team seats are currently in use.
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </>
       )}
     </section>
