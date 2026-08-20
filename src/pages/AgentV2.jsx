@@ -841,7 +841,7 @@ function handlePrintSummary() {
 
 <div className="mt-5 overflow-hidden rounded-3xl border border-blue-500/40 bg-gradient-to-r from-blue-950/80 via-slate-900 to-cyan-950/70 p-6 shadow-2xl shadow-blue-950/30">
               <div className={`flex flex-col gap-6 ${isPaid ? "items-center text-center" : ""}`}>
-                <div>
+                <div className="w-full">
                   {!isPaid ? (
   <>
 <div className="inline-flex items-center rounded-full border border-blue-400/30 bg-blue-500/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-blue-300">
@@ -860,10 +860,8 @@ function handlePrintSummary() {
   </>
 ) : (
 <>
-<div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-4">
-  <div />
-
-  <div className="inline-flex items-center justify-self-center rounded-full border border-green-400/30 bg-green-500/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-green-300">
+<div className="relative flex w-full items-center justify-center">
+  <div className="inline-flex items-center rounded-full border border-green-400/30 bg-green-500/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-green-300">
     {accessRole === "member"
       ? "Team Access Active"
       : "Professional Access Active"}
@@ -872,7 +870,7 @@ function handlePrintSummary() {
   <button
     type="button"
     onClick={() => setShowAccessPanel((prev) => !prev)}
-    className="justify-self-end rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs text-slate-300 transition hover:bg-slate-800 hover:text-white"
+    className="absolute right-0 rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs text-slate-300 transition hover:bg-slate-800 hover:text-white"
   >
     {showAccessPanel ? "Hide Access ▲" : "Show Access ▼"}
   </button>
