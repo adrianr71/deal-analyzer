@@ -149,6 +149,53 @@ useEffect(() => {
   };
 }, []);
 
+function getOrCreateDeviceId() {
+  const key = "rds_device_id";
+
+  let deviceId = localStorage.getItem(key);
+
+  if (!deviceId) {
+    deviceId = crypto.randomUUID();
+    localStorage.setItem(key, deviceId);
+  }
+
+  return deviceId;
+}
+
+async function registerCurrentDevice(accessToken) {
+  const deviceId = getOrCreateDeviceId();
+
+  const deviceName = [
+    navigator.platform || "",
+    navigator.userAgent || "",
+  ]
+    .filter(Boolean)
+    .join(" — ")
+    .slice(0, 120);
+
+  const response = await fetch("/api/register-device", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({
+      deviceId,
+      deviceName,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data.allowed) {
+    throw new Error(
+      data.error || "This device is not allowed."
+    );
+  }
+
+  return data;
+}
+
 async function handleSignIn() {
   const email = authEmail.trim();
 
@@ -235,6 +282,29 @@ async function handleSignIn() {
 
       return;
     }
+
+try {
+  await registerCurrentDevice(session.access_token);
+} catch (deviceError) {
+  console.error(
+    "Device registration failed:",
+    deviceError
+  );
+
+  await supabase.auth.signOut();
+
+  setAuthUser(null);
+  setIsSubscribed(false);
+  setAccessRole(null);
+
+  alert(
+    deviceError.message ||
+      "This account has reached the 2-device limit."
+  );
+
+  return;
+}
+
   } catch (activationError) {
     console.error(
       "Account access verification failed:",
