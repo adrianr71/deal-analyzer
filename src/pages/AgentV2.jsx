@@ -354,22 +354,17 @@ async function handleSignOut() {
 
       const releaseData = await releaseResponse.json();
 
-      if (!releaseResponse.ok) {
-        console.error(
-          "Device release failed:",
-          releaseData
-        );
-
-        alert(
-          releaseData.error ||
-            "Unable to release this device. Please try signing out again."
-        );
-
-        return;
-      }
+if (!releaseResponse.ok) {
+  console.warn(
+    "Device release failed, continuing sign out:",
+    releaseData
+  );
+}
     }
 
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut({
+  scope: "local",
+});
 
     if (error) {
       console.error("Supabase sign out failed:", error);
