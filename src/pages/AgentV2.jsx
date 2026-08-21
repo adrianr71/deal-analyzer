@@ -270,7 +270,9 @@ async function handleSignIn() {
       !entitlementResponse.ok ||
       !entitlementData.subscribed
     ) {
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({
+  scope: "local",
+});
 
       setAuthUser(null);
       setIsSubscribed(false);
@@ -291,7 +293,9 @@ try {
     deviceError
   );
 
-  await supabase.auth.signOut();
+  await supabase.auth.signOut({
+  scope: "local",
+});
 
   setAuthUser(null);
   setIsSubscribed(false);
@@ -311,7 +315,9 @@ try {
       activationError
     );
 
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({
+  scope: "local",
+});
 
     setAuthUser(null);
     setIsSubscribed(false);
