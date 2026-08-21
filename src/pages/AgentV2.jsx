@@ -175,47 +175,85 @@ async function handleSignIn() {
 
   const session = signInData?.session;
 
-  if (!selectedPlan && session?.access_token) {
-    try {
-      const activationResponse = await fetch(
-        "/api/activate-team-membership",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        }
-      );
-
-      const activationData = await activationResponse.json();
-
-      if (
-        !activationResponse.ok &&
-        activationResponse.status !== 404
-      ) {
-        console.error(
-          "Team membership activation failed:",
-          activationData
-        );
-
-        alert(
-          activationData.error ||
-            "Unable to activate team membership."
-        );
-
-        return;
+ if (!selectedPlan && session?.access_token) {
+  try {
+    const activationResponse = await fetch(
+      "/api/activate-team-membership",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       }
-    } catch (activationError) {
+    );
+
+    const activationData = await activationResponse.json();
+
+    if (
+      !activationResponse.ok &&
+      activationResponse.status !== 404
+    ) {
       console.error(
         "Team membership activation failed:",
-        activationError
+        activationData
       );
 
-      alert("Unable to activate team membership.");
+      alert(
+        activationData.error ||
+          "Unable to activate team membership."
+      );
+
       return;
     }
-  }
 
+    const entitlementResponse = await fetch(
+      "/api/get-subscription-status",
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      }
+    );
+
+    const entitlementData =
+      await entitlementResponse.json();
+
+    if (
+      !entitlementResponse.ok ||
+      !entitlementData.subscribed
+    ) {
+      await supabase.auth.signOut();
+
+      setAuthUser(null);
+      setIsSubscribed(false);
+      setAccessRole(null);
+
+      alert(
+        "You no longer have access to this team. Please contact your team administrator."
+      );
+
+      return;
+    }
+  } catch (activationError) {
+    console.error(
+      "Account access verification failed:",
+      activationError
+    );
+
+    await supabase.auth.signOut();
+
+    setAuthUser(null);
+    setIsSubscribed(false);
+    setAccessRole(null);
+
+    alert(
+      "Unable to verify your account access. Please try again."
+    );
+
+    return;
+  }
+}
   if (selectedPlan) {
     await startStripeCheckout(selectedPlan);
   }
