@@ -121,6 +121,8 @@ export default function App() {
   const [showAccessPanel, setShowAccessPanel] = useState(true);
   const [showTeamPanel, setShowTeamPanel] = useState(true);
 
+  const [removeLoadingId, setRemoveLoadingId] = useState(null);
+
 useEffect(() => {
   async function loadAuthSession() {
     const { data, error } = await supabase.auth.getSession();
@@ -507,6 +509,61 @@ async function handleInviteTeamMember() {
     );
   } finally {
     setInviteLoading(false);
+  }
+}
+
+async function handleRemoveTeamMember(member) {
+  if (!member?.id) return;
+
+  const confirmed = window.confirm(
+    `Remove ${member.email} from this team?`
+  );
+
+  if (!confirmed) return;
+
+  setRemoveLoadingId(member.id);
+  setTeamError("");
+
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.access_token) {
+      alert("Please sign in again to remove a team member.");
+      return;
+    }
+
+    const response = await fetch("/api/remove-team-member", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        memberId: member.id,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error || "Unable to remove team member."
+      );
+    }
+
+    await loadTeamMembers();
+
+    alert(`${member.email} was removed from the team.`);
+  } catch (error) {
+    console.error("Team member removal failed:", error);
+
+    alert(
+      error.message || "Unable to remove team member."
+    );
+  } finally {
+    setRemoveLoadingId(null);
   }
 }
 
@@ -1200,17 +1257,18 @@ function handlePrintSummary() {
           {!teamLoading && !teamError && teamData && (
             <>
               <div className="mt-5 overflow-hidden rounded-xl border border-slate-700">
-                <div className="grid grid-cols-[1fr_auto_auto] gap-3 bg-slate-900 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                  <div>Email</div>
-                  <div>Role</div>
-                  <div>Status</div>
-                </div>
+               <div className="grid grid-cols-[1fr_auto_auto_auto] gap-3 bg-slate-900 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                <div>Email</div>
+                <div>Role</div>
+                <div>Status</div>
+               <div>Action</div>
+              </div>
 
                 <div className="divide-y divide-slate-800">
                   {teamData.members?.map((member) => (
                     <div
                       key={member.id || member.email}
-                      className="grid grid-cols-[1fr_auto_auto] items-center gap-3 px-4 py-3 text-sm"
+                      className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-3 px-4 py-3 text-sm"
                     >
                       <div className="break-all text-white">
                         {member.email}
@@ -1229,6 +1287,22 @@ function handlePrintSummary() {
                       >
                         {member.status}
                       </div>
+<div className="text-right">
+  {member.role !== "owner" ? (
+    <button
+      type="button"
+      onClick={() => handleRemoveTeamMember(member)}
+      disabled={removeLoadingId === member.id}
+      className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-300 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      {removeLoadingId === member.id
+        ? "Removing..."
+        : "Remove"}
+    </button>
+  ) : (
+    <span className="text-xs text-slate-600">—</span>
+  )}
+</div>
                     </div>
                   ))}
                 </div>
