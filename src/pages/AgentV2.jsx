@@ -331,6 +331,44 @@ try {
 
 async function handleSignOut() {
   try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    const deviceId = localStorage.getItem("rds_device_id");
+
+    if (session?.access_token && deviceId) {
+      const releaseResponse = await fetch(
+        "/api/release-device",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            deviceId,
+          }),
+        }
+      );
+
+      const releaseData = await releaseResponse.json();
+
+      if (!releaseResponse.ok) {
+        console.error(
+          "Device release failed:",
+          releaseData
+        );
+
+        alert(
+          releaseData.error ||
+            "Unable to release this device. Please try signing out again."
+        );
+
+        return;
+      }
+    }
+
     const { error } = await supabase.auth.signOut();
 
     if (error) {
