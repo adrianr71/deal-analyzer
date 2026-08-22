@@ -176,8 +176,11 @@ export default async function handler(req, res) {
             },
           ],
 
-          proration_behavior:
-            "create_prorations",
+proration_behavior:
+  "always_invoice",
+
+payment_behavior:
+  "pending_if_incomplete",
 
           metadata: {
             ...stripeSubscription.metadata,
