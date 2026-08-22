@@ -98,8 +98,8 @@ export default async function handler(req, res) {
     } = await supabaseAdmin
       .from("subscriptions")
       .select(
-        "stripe_subscription_id, plan, status"
-      )
+  "id, stripe_subscription_id, plan, status"
+)
       .eq("user_id", user.id)
       .in("status", ["active", "trialing"])
       .limit(1)
@@ -141,28 +141,168 @@ export default async function handler(req, res) {
       });
     }
 
-    if (targetPlan.rank < currentPlan.rank) {
-      return res.status(400).json({
-        error:
-          "Downgrades must be scheduled for the next billing period.",
-        downgrade: true,
-      });
-    }
-
     const stripeSubscription =
-      await stripe.subscriptions.retrieve(
-        savedSubscription.stripe_subscription_id
+  await stripe.subscriptions.retrieve(
+    savedSubscription.stripe_subscription_id
+  );
+
+const subscriptionItem =
+  stripeSubscription.items?.data?.[0];
+
+if (!subscriptionItem?.id || !subscriptionItem?.price?.id) {
+  return res.status(500).json({
+    error:
+      "Stripe subscription item could not be found",
+  });
+}
+
+if (targetPlan.rank < currentPlan.rank) {
+  const {
+    count: usedSeats,
+    error: seatCountError,
+  } = await supabaseAdmin
+    .from("team_members")
+    .select("id", {
+      count: "exact",
+      head: true,
+    })
+    .eq(
+      "subscription_id",
+      savedSubscription.id
+    )
+    .in("status", ["active", "invited"]);
+
+  if (seatCountError) {
+    console.error(
+      "Downgrade seat validation failed:",
+      seatCountError
+    );
+
+    return res.status(500).json({
+      error:
+        "Unable to verify team seats before downgrade",
+    });
+  }
+
+  if ((usedSeats || 0) > targetPlan.maxUsers) {
+    return res.status(400).json({
+      error:
+        `This plan supports ${targetPlan.maxUsers} user${
+          targetPlan.maxUsers === 1 ? "" : "s"
+        }. Remove team members before scheduling this downgrade.`,
+      downgrade: true,
+      usedSeats: usedSeats || 0,
+      maxUsers: targetPlan.maxUsers,
+    });
+  }
+
+  if (stripeSubscription.schedule) {
+    return res.status(409).json({
+      error:
+        "A subscription change is already scheduled.",
+      downgrade: true,
+    });
+  }
+
+  const periodEnd =
+    stripeSubscription.current_period_end ||
+    subscriptionItem.current_period_end;
+
+  if (!periodEnd) {
+    return res.status(500).json({
+      error:
+        "Unable to determine the next billing date",
+    });
+  }
+
+  const schedule =
+    await stripe.subscriptionSchedules.create({
+      from_subscription:
+        savedSubscription.stripe_subscription_id,
+    });
+
+  try {
+    await stripe.subscriptionSchedules.update(
+      schedule.id,
+      {
+        end_behavior: "release",
+
+        phases: [
+          {
+            start_date:
+              schedule.current_phase?.start_date ||
+              stripeSubscription.start_date,
+
+            end_date: periodEnd,
+
+            items: [
+              {
+                price: subscriptionItem.price.id,
+                quantity:
+                  subscriptionItem.quantity || 1,
+              },
+            ],
+
+            proration_behavior: "none",
+
+            metadata: {
+              ...stripeSubscription.metadata,
+            },
+          },
+
+          {
+            start_date: periodEnd,
+
+            iterations: 1,
+
+            items: [
+              {
+                price: targetPlan.priceId,
+                quantity: 1,
+              },
+            ],
+
+            proration_behavior: "none",
+
+            metadata: {
+              ...stripeSubscription.metadata,
+              user_id: user.id,
+              user_email: user.email || "",
+              plan: requestedPlan,
+              max_users: String(
+                targetPlan.maxUsers
+              ),
+              max_devices_per_user: String(
+                targetPlan.maxDevicesPerUser
+              ),
+            },
+          },
+        ],
+      }
+    );
+  } catch (scheduleError) {
+    try {
+      await stripe.subscriptionSchedules.release(
+        schedule.id
       );
-
-    const subscriptionItem =
-      stripeSubscription.items?.data?.[0];
-
-    if (!subscriptionItem?.id) {
-      return res.status(500).json({
-        error:
-          "Stripe subscription item could not be found",
-      });
+    } catch (releaseError) {
+      console.error(
+        "Unable to release failed downgrade schedule:",
+        releaseError
+      );
     }
+
+    throw scheduleError;
+  }
+
+  return res.status(200).json({
+    changed: false,
+    scheduled: true,
+    plan: requestedPlan,
+    effectiveAt:
+      new Date(periodEnd * 1000).toISOString(),
+  });
+}
 
     const updatedSubscription =
       await stripe.subscriptions.update(
