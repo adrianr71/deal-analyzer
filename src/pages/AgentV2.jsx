@@ -864,6 +864,62 @@ async function startStripeCheckout(plan = "individual") {
     );
   }
 }
+
+async function changeSubscriptionPlan(plan) {
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.access_token) {
+      alert("Please sign in again to change your plan.");
+      return;
+    }
+
+    const response = await fetch("/api/change-plan", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        plan,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(
+        data.error ||
+          "Unable to change your subscription plan."
+      );
+      return;
+    }
+
+    alert(
+      `Your subscription was upgraded to ${
+        plan === "team_10"
+          ? "Team 10"
+          : plan === "team_5"
+          ? "Team 5"
+          : "Individual"
+      }.`
+    );
+
+    window.location.reload();
+  } catch (error) {
+    console.error(
+      "Subscription plan change failed:",
+      error
+    );
+
+    alert(
+      "Unable to change your subscription plan. Please try again."
+    );
+  }
+}
+
 async function runFreeTrialBatch() {
   if (isProcessing) return;
   if (batchAnalyzed) {
@@ -1098,13 +1154,25 @@ function handlePrintSummary() {
       </div>
 
       {accessRole !== "member" && (
-        <button
-          type="button"
-          onClick={openCustomerPortal}
-          className="mt-4 rounded-xl border border-green-400/40 bg-green-500/10 px-4 py-2 text-sm font-semibold text-green-200 transition hover:bg-green-500/20"
-        >
-          Manage Subscription
-        </button>
+<div className="mt-4 flex flex-wrap justify-center gap-3">
+  <button
+    type="button"
+    onClick={openCustomerPortal}
+    className="rounded-xl border border-green-400/40 bg-green-500/10 px-4 py-2 text-sm font-semibold text-green-200 transition hover:bg-green-500/20"
+  >
+    Manage Subscription
+  </button>
+
+  {subscriptionPlan === "team_5" && (
+    <button
+      type="button"
+      onClick={() => changeSubscriptionPlan("team_10")}
+      className="rounded-xl border border-amber-400/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
+    >
+      Upgrade to Team 10
+    </button>
+  )}
+</div>
       )}
     </div>
   )}
