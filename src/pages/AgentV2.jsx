@@ -1166,7 +1166,18 @@ function handlePrintSummary() {
   {subscriptionPlan === "team_5" && (
     <button
       type="button"
-      onClick={() => changeSubscriptionPlan("team_10")}
+      onClick={() => {
+  const confirmed = window.confirm(
+    "Upgrade to Team 10?\n\n" +
+      "Your upgrade will take effect immediately.\n\n" +
+      "You will be charged a prorated amount for the remainder of your current billing period. " +
+      "Your regular Team 10 price of $349/month will begin on your next renewal date."
+  );
+
+  if (!confirmed) return;
+
+  changeSubscriptionPlan("team_10");
+}}
       className="rounded-xl border border-amber-400/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
     >
       Upgrade to Team 10
