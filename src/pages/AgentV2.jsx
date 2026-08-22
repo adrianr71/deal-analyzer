@@ -897,17 +897,36 @@ async function changeSubscriptionPlan(plan) {
       return;
     }
 
-    alert(
-      `Your subscription was upgraded to ${
-        plan === "team_10"
-          ? "Team 10"
-          : plan === "team_5"
-          ? "Team 5"
-          : "Individual"
-      }.`
-    );
+if (data.scheduled) {
+  const effectiveDate = data.effectiveAt
+    ? new Date(data.effectiveAt).toLocaleDateString()
+    : "your next renewal date";
 
-    window.location.reload();
+  alert(
+    `Your downgrade to ${
+      plan === "team_5"
+        ? "Team 5"
+        : "Individual"
+    } is scheduled for ${effectiveDate}.\n\n` +
+      "Your current plan and access will remain active until then."
+  );
+
+  window.location.reload();
+  return;
+}
+
+alert(
+  `Your subscription was upgraded to ${
+    plan === "team_10"
+      ? "Team 10"
+      : plan === "team_5"
+      ? "Team 5"
+      : "Individual"
+  }.`
+);
+
+window.location.reload();   
+
   } catch (error) {
     console.error(
       "Subscription plan change failed:",
@@ -1183,6 +1202,29 @@ function handlePrintSummary() {
       Upgrade to Team 10
     </button>
   )}
+
+{subscriptionPlan === "team_10" && (
+  <button
+    type="button"
+    onClick={() => {
+      const confirmed = window.confirm(
+        "Downgrade to Team 5?\n\n" +
+          "Team 5 supports up to 5 users.\n\n" +
+          "Your Team 10 access will remain active until the end of your current billing period. " +
+          "Team 5 pricing will begin on your next renewal date.\n\n" +
+          "If you currently have more than 5 active or invited team members, the downgrade will be blocked until you remove enough members."
+      );
+
+      if (!confirmed) return;
+
+      changeSubscriptionPlan("team_5");
+    }}
+    className="rounded-xl border border-slate-500/40 bg-slate-500/10 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-500/20"
+  >
+    Downgrade to Team 5
+  </button>
+)}
+
 </div>
       )}
     </div>
