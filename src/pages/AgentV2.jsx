@@ -886,22 +886,28 @@ async function runFreeTrialBatch() {
   setIsProcessing(true);
 
   try {
-    const customerId = localStorage.getItem("stripe_customer_id");
-    const subscriptionId = localStorage.getItem("stripe_subscription_id");
+const {
+  data: { session },
+} = await supabase.auth.getSession();
 
-    const response = await fetch("/api/analyze-batch", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        rows,
-        assumptions,
-        taxOverrides,
-        customerId,
-        subscriptionId,
-      }),
-    });
+const headers = {
+  "Content-Type": "application/json",
+};
+
+if (session?.access_token) {
+  headers.Authorization =
+    `Bearer ${session.access_token}`;
+}
+
+const response = await fetch("/api/analyze-batch", {
+  method: "POST",
+  headers,
+  body: JSON.stringify({
+    rows,
+    assumptions,
+    taxOverrides,
+  }),
+});
 
     const data = await response.json();
 
