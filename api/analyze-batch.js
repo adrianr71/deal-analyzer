@@ -1,5 +1,17 @@
+import { createClient } from "@supabase/supabase-js";
 import { analyzeRows } from "../lib/analyzer1.js";
 import { checkSubscriptionStatus } from "../lib/subscription-status.js";
+
+const supabaseAdmin = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  }
+);
 
 async function logUsageEvent({
   customerId,
@@ -11,17 +23,26 @@ async function logUsageEvent({
   metadata = {},
 }) {
   try {
-    const supabaseUrl = String(process.env.VITE_SUPABASE_URL || "")
+    const supabaseUrl = String(
+      process.env.SUPABASE_URL ||
+      process.env.VITE_SUPABASE_URL ||
+      ""
+    )
       .trim()
       .replace(/\/$/, "");
 
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const serviceRoleKey =
+      process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !serviceRoleKey) return;
 
     const userAgent = req.headers["user-agent"] || "";
-    const forwardedFor = req.headers["x-forwarded-for"] || "";
-    const ipAddress = String(forwardedFor).split(",")[0].trim();
+    const forwardedFor =
+      req.headers["x-forwarded-for"] || "";
+
+    const ipAddress = String(forwardedFor)
+      .split(",")[0]
+      .trim();
 
     await fetch(`${supabaseUrl}/rest/v1/usage_events`, {
       method: "POST",
@@ -33,7 +54,8 @@ async function logUsageEvent({
       },
       body: JSON.stringify({
         stripe_customer_id: customerId || null,
-        stripe_subscription_id: subscriptionId || null,
+        stripe_subscription_id:
+          subscriptionId || null,
         event_type: eventType,
         row_count: rowCount,
         is_subscribed: isSubscribed,
@@ -43,7 +65,10 @@ async function logUsageEvent({
       }),
     });
   } catch (error) {
-    console.error("Usage event logging failed:", error);
+    console.error(
+      "Usage event logging failed:",
+      error
+    );
   }
 }
 
@@ -52,46 +77,96 @@ const FREE_BATCH_LIMIT = 20;
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({
+      error: "Method not allowed",
+    });
   }
 
   try {
-    const { rows, assumptions, taxOverrides, customerId, subscriptionId } =
-      req.body || {};
+    const {
+      rows,
+      assumptions,
+      taxOverrides,
+    } = req.body || {};
 
     if (!Array.isArray(rows) || !assumptions) {
-      return res.status(400).json({ error: "Missing rows or assumptions" });
+      return res.status(400).json({
+        error: "Missing rows or assumptions",
+      });
     }
 
-const subscription = await checkSubscriptionStatus({
-  customerId,
-  subscriptionId,
-});
+    let userId = null;
 
-const isSubscribed = subscription.subscribed === true;
-const limit = isSubscribed ? PAID_BATCH_LIMIT : FREE_BATCH_LIMIT;
+    const authHeader =
+      req.headers.authorization || "";
 
-await logUsageEvent({
-  customerId,
-  subscriptionId,
-  eventType: "analyze_batch",
-  rowCount: rows.length,
-  isSubscribed,
-  req,
-  metadata: {
-    source: "api/analyze-batch",
-  },
-});
+    if (authHeader.startsWith("Bearer ")) {
+      const accessToken = authHeader
+        .slice(7)
+        .trim();
 
-if (rows.length > limit) {
-  return res.status(403).json({
-    error: `Batch exceeds ${limit} properties for this plan.`,
-    isSubscribed,
-    limit,
-  });
-}
+      const {
+        data: { user },
+        error: userError,
+      } = await supabaseAdmin.auth.getUser(
+        accessToken
+      );
 
-    const analyzed = analyzeRows(rows, assumptions, taxOverrides || {});
+      if (!userError && user) {
+        userId = user.id;
+      }
+    }
+
+    const subscription =
+      await checkSubscriptionStatus({
+        userId,
+      });
+
+    const isSubscribed =
+      subscription.subscribed === true;
+
+    const limit = isSubscribed
+      ? PAID_BATCH_LIMIT
+      : FREE_BATCH_LIMIT;
+
+    await logUsageEvent({
+      customerId:
+        subscription.stripeCustomerId || null,
+
+      subscriptionId:
+        subscription.stripeSubscriptionId || null,
+
+      eventType: "analyze_batch",
+
+      rowCount: rows.length,
+
+      isSubscribed,
+
+      req,
+
+      metadata: {
+        source: "api/analyze-batch",
+        userId,
+        accessRole:
+          subscription.accessRole || null,
+        plan:
+          subscription.plan || null,
+      },
+    });
+
+    if (rows.length > limit) {
+      return res.status(403).json({
+        error: `Batch exceeds ${limit} properties for this plan.`,
+        isSubscribed,
+        limit,
+      });
+    }
+
+    const analyzed = analyzeRows(
+      rows,
+      assumptions,
+      taxOverrides || {}
+    );
 
     return res.status(200).json({
       analyzed,
@@ -99,7 +174,13 @@ if (rows.length > limit) {
       limit,
     });
   } catch (error) {
-    console.error("Analyze batch error:", error);
-    return res.status(500).json({ error: "Unable to analyze batch" });
+    console.error(
+      "Analyze batch error:",
+      error
+    );
+
+    return res.status(500).json({
+      error: "Unable to analyze batch",
+    });
   }
 }
