@@ -196,30 +196,39 @@ if (targetPlan.rank < currentPlan.rank) {
     });
   }
 
-  if (stripeSubscription.schedule) {
-    return res.status(409).json({
-      error:
-        "A subscription change is already scheduled.",
-      downgrade: true,
-    });
-  }
+const periodEnd =
+  stripeSubscription.current_period_end ||
+  subscriptionItem.current_period_end;
 
-  const periodEnd =
-    stripeSubscription.current_period_end ||
-    subscriptionItem.current_period_end;
+if (!periodEnd) {
+  return res.status(500).json({
+    error:
+      "Unable to determine the next billing date",
+  });
+}
 
-  if (!periodEnd) {
-    return res.status(500).json({
-      error:
-        "Unable to determine the next billing date",
-    });
-  }
+let schedule;
+let createdNewSchedule = false;
 
-  const schedule =
+if (stripeSubscription.schedule) {
+  const scheduleId =
+    typeof stripeSubscription.schedule === "string"
+      ? stripeSubscription.schedule
+      : stripeSubscription.schedule.id;
+
+  schedule =
+    await stripe.subscriptionSchedules.retrieve(
+      scheduleId
+    );
+} else {
+  schedule =
     await stripe.subscriptionSchedules.create({
       from_subscription:
         savedSubscription.stripe_subscription_id,
     });
+
+  createdNewSchedule = true;
+}
 
   try {
     await stripe.subscriptionSchedules.update(
@@ -278,7 +287,9 @@ if (targetPlan.rank < currentPlan.rank) {
         ],
       }
     );
-  } catch (scheduleError) {
+
+} catch (scheduleError) {
+  if (createdNewSchedule) {
     try {
       await stripe.subscriptionSchedules.release(
         schedule.id
@@ -289,9 +300,10 @@ if (targetPlan.rank < currentPlan.rank) {
         releaseError
       );
     }
-
-    throw scheduleError;
   }
+
+  throw scheduleError;
+}
 
   return res.status(200).json({
     changed: false,
