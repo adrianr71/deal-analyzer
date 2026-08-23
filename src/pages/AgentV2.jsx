@@ -1230,6 +1230,28 @@ function handlePrintSummary() {
   </button>
 )}
 
+{subscriptionPlan === "team_10" && (
+  <button
+    type="button"
+    onClick={() => {
+      const confirmed = window.confirm(
+        "Downgrade to Individual?\n\n" +
+          "The Individual plan supports 1 named user and up to 2 personal devices.\n\n" +
+          "Your Team 10 access will remain active until the end of your current billing period. " +
+          "Individual pricing of $49/month will begin on your next renewal date.\n\n" +
+          "All additional active or invited team members must be removed before this downgrade can be scheduled."
+      );
+
+      if (!confirmed) return;
+
+      changeSubscriptionPlan("individual");
+    }}
+    className="rounded-xl border border-slate-500/40 bg-slate-500/10 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-500/20"
+  >
+    Downgrade to Individual
+  </button>
+)}
+
 </div>
       )}
     </div>
