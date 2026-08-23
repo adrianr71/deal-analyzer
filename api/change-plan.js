@@ -253,8 +253,6 @@ if (targetPlan.rank < currentPlan.rank) {
           {
             start_date: periodEnd,
 
-            iterations: 1,
-
             items: [
               {
                 price: targetPlan.priceId,
