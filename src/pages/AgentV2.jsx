@@ -897,10 +897,14 @@ async function changeSubscriptionPlan(plan) {
       return;
     }
 
-if (data.scheduled) {
-  const effectiveDate = data.effectiveAt
-    ? new Date(data.effectiveAt).toLocaleDateString()
-    : "your next renewal date";
+const effectiveDate = data.effectiveAt
+  ? new Intl.DateTimeFormat("en-US", {
+      timeZone: "UTC",
+      month: "numeric",
+      day: "numeric",
+      year: "numeric",
+    }).format(new Date(data.effectiveAt))
+  : "your next renewal date";
 
   alert(
     `Your downgrade to ${
