@@ -196,6 +196,49 @@ async function registerCurrentDevice(accessToken) {
   return data;
 }
 
+async function handleSignUp() {
+  const email = authEmail.trim();
+
+  if (!email || !authPassword) {
+    alert("Please enter your email and password.");
+    return;
+  }
+
+  if (authPassword.length < 6) {
+    alert("Password must be at least 6 characters.");
+    return;
+  }
+
+  const {
+    data: signUpData,
+    error,
+  } = await supabase.auth.signUp({
+    email,
+    password: authPassword,
+  });
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  const session = signUpData?.session;
+
+  if (!session) {
+    alert(
+      "Account created. Please check your email to confirm your account, then sign in."
+    );
+    return;
+  }
+
+  setAuthPassword("");
+  setShowAccountSetup(false);
+
+  if (selectedPlan) {
+    await startStripeCheckout(selectedPlan);
+  }
+}
+
 async function handleSignIn() {
   const email = authEmail.trim();
 
