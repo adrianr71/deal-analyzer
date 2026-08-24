@@ -154,32 +154,108 @@ if (
 }
 }
 
+async function readRawBody(req) {
+  const chunks = [];
+
+  for await (const chunk of req) {
+    chunks.push(
+      Buffer.isBuffer(chunk)
+        ? chunk
+        : Buffer.from(chunk)
+    );
+  }
+
+  return Buffer.concat(chunks);
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({
+      error: "Method not allowed",
+    });
+  }
+
+  const webhookSecret =
+    process.env.STRIPE_WEBHOOK_SECRET;
+
+  if (!webhookSecret) {
+    console.error(
+      "Missing STRIPE_WEBHOOK_SECRET"
+    );
+
+    return res.status(500).json({
+      error: "Webhook is not configured",
+    });
+  }
+
+  const signature =
+    req.headers["stripe-signature"];
+
+  if (!signature) {
+    return res.status(400).json({
+      error: "Missing Stripe signature",
+    });
+  }
+
+  let event;
+
+  try {
+    const rawBody = await readRawBody(req);
+
+    event = stripe.webhooks.constructEvent(
+      rawBody,
+      signature,
+      webhookSecret
+    );
+  } catch (error) {
+    console.error(
+      "Stripe webhook signature verification failed:",
+      error.message
+    );
+
+    return res.status(400).json({
+      error: "Invalid webhook signature",
+    });
   }
 
   try {
-    const event = req.body;
-
     if (
-      event.type === "customer.subscription.created" ||
-      event.type === "customer.subscription.updated" ||
-      event.type === "customer.subscription.deleted"
+      event.type ===
+        "customer.subscription.created" ||
+      event.type ===
+        "customer.subscription.updated" ||
+      event.type ===
+        "customer.subscription.deleted"
     ) {
-      const subscription = await stripe.subscriptions.retrieve(event.data.object.id, {
-        expand: ["customer", "items.data.price"],
-      });
+      const subscription =
+        await stripe.subscriptions.retrieve(
+          event.data.object.id,
+          {
+            expand: [
+              "customer",
+              "items.data.price",
+            ],
+          }
+        );
 
-      await saveSubscription(subscription, event.id);
+      await saveSubscription(
+        subscription,
+        event.id
+      );
     }
 
-    return res.status(200).json({ received: true });
-} catch (error) {
-  console.error("Stripe webhook error:", error);
-  return res.status(500).json({
-    error: "Webhook failed",
-    message: error.message,
-  });
-}
+    return res.status(200).json({
+      received: true,
+    });
+  } catch (error) {
+    console.error(
+      "Stripe webhook processing error:",
+      error
+    );
+
+    return res.status(500).json({
+      error: "Webhook failed",
+      message: error.message,
+    });
+  }
 }
