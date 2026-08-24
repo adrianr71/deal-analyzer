@@ -309,24 +309,31 @@ async function handleSignIn() {
     const entitlementData =
       await entitlementResponse.json();
 
-    if (
-      !entitlementResponse.ok ||
-      !entitlementData.subscribed
-    ) {
-      await supabase.auth.signOut({
-  scope: "local",
-});
+if (!entitlementResponse.ok) {
+  console.error(
+    "Subscription entitlement lookup failed:",
+    entitlementData
+  );
 
-      setAuthUser(null);
-      setIsSubscribed(false);
-      setAccessRole(null);
+  alert(
+    entitlementData.error ||
+      "Unable to verify your account access. Please try again."
+  );
 
-      alert(
-        "You no longer have access to this team. Please contact your team administrator."
-      );
+  return;
+}
 
-      return;
-    }
+if (!entitlementData.subscribed) {
+  localStorage.removeItem("subscribed");
+
+  setIsSubscribed(false);
+  setSubscriptionPlan("individual");
+  setMaxUsers(1);
+  setMaxDevicesPerUser(2);
+  setAccessRole(null);
+
+  return;
+}
 
 try {
   await registerCurrentDevice(session.access_token);
