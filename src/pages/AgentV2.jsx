@@ -1186,8 +1186,10 @@ function handlePrintSummary() {
 <div className="mt-5 overflow-hidden rounded-3xl border border-blue-500/40 bg-gradient-to-r from-blue-950/80 via-slate-900 to-cyan-950/70 p-6 shadow-2xl shadow-blue-950/30">
               <div className={`flex flex-col gap-6 ${isPaid ? "items-center text-center" : ""}`}>
                 <div className="w-full">
-                  {!isPaid ? (
-  <>
+ {!isPaid ? (
+ <>
+    {!showAccountSetup && (
+      <>
 <div className="inline-flex items-center rounded-full border border-blue-400/30 bg-blue-500/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-blue-300">
   Real Estate Professional Plans
 </div>
@@ -1201,6 +1203,8 @@ function handlePrintSummary() {
     Individual and team options for real estate professionals.
   </div>
 </div>
+      </>
+    )}
   </>
 ) : (
 <>
@@ -1334,7 +1338,7 @@ function handlePrintSummary() {
   )}
 </>
 )}
-{!isPaid && (
+{!isPaid && !showAccountSetup && (
   <>
     <div className="mt-3 max-w-2xl text-sm leading-7 text-slate-300 md:text-base">
       Analyze up to 100 rental properties at once using the same
