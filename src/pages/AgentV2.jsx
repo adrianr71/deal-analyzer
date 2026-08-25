@@ -110,6 +110,7 @@ export default function App() {
   const [authPassword, setAuthPassword] = useState("");
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [showAccountSetup, setShowAccountSetup] = useState(false);
+  const [accountMode, setAccountMode] = useState(null);
   const [subscriptionChecked, setSubscriptionChecked] = useState(false);
   
   const [teamData, setTeamData] = useState(null);
@@ -231,8 +232,9 @@ async function handleSignUp() {
     return;
   }
 
-  setAuthPassword("");
-  setShowAccountSetup(false);
+setAuthPassword("");
+setShowAccountSetup(false);
+setAccountMode(null);
 
   if (selectedPlan) {
     await startStripeCheckout(selectedPlan);
@@ -260,8 +262,9 @@ async function handleSignIn() {
     return;
   }
 
-  setAuthPassword("");
-  setShowAccountSetup(false);
+setAuthPassword("");
+setShowAccountSetup(false);
+setAccountMode(null);
 
   const session = signInData?.session;
 
@@ -838,11 +841,12 @@ async function startStripeCheckout(plan = "individual") {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (!session?.user || !session?.access_token) {
-    setSelectedPlan(plan);
-    setShowAccountSetup(true);
-    return;
-  }
+if (!session?.user || !session?.access_token) {
+  setSelectedPlan(plan);
+  setAccountMode("signup");
+  setShowAccountSetup(true);
+  return;
+}
 
   try {
     const response = await fetch("/api/create-checkout-session", {
@@ -1159,11 +1163,11 @@ function handlePrintSummary() {
         </button>
       ) : (
         <button
-          type="button"
-          onClick={() => {
-            setSelectedPlan(null);
-            setShowAccountSetup(true);
-          }}
+         onClick={() => {
+         setSelectedPlan(null);
+         setAccountMode("signin");
+         setShowAccountSetup(true);
+      }}
           className="rounded-xl border border-cyan-400/40 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-200 transition hover:bg-cyan-500/20"
         >
           Sign In
@@ -1352,21 +1356,20 @@ function handlePrintSummary() {
 {showAccountSetup && (
   <div className="mb-5 rounded-2xl border border-cyan-400/30 bg-slate-950/60 p-5">
 <div className="text-lg font-semibold text-white">
-  {selectedPlan === "team_5"
-    ? "Continue with Team 5"
+  {accountMode === "signin"
+    ? "Sign In"
+    : selectedPlan === "team_5"
+    ? "Create your Team 5 account"
     : selectedPlan === "team_10"
-    ? "Continue with Team 10"
-    : selectedPlan === "individual"
-    ? "Continue with Individual"
-    : "Sign In"}
+    ? "Create your Team 10 account"
+    : "Create your Individual account"}
 </div>
 
 <div className="mt-2 text-sm leading-6 text-slate-400">
-  {selectedPlan
-    ? "New customer? Enter your email and create a password with at least 6 characters. Already have an account? Enter your existing email and password and choose Sign In."
-: "Sign in with your existing account. Team members should use the exact email address that received the invitation."}
+  {accountMode === "signin"
+    ? "Enter your existing email and password. Team members should use the exact email address that received the invitation."
+    : "Enter your email and create a password with at least 6 characters. After your account is created, you’ll continue securely to Stripe to complete your subscription."}
 </div>
-
     <div className="mt-4 grid gap-3 sm:grid-cols-2">
       <input
         type="email"
@@ -1386,7 +1389,7 @@ function handlePrintSummary() {
     </div>
 
 <div className="mt-4 flex flex-wrap gap-3">
-  {selectedPlan && (
+  {accountMode === "signup" && selectedPlan && (
     <button
       type="button"
       onClick={handleSignUp}
@@ -1396,20 +1399,23 @@ function handlePrintSummary() {
     </button>
   )}
 
-  <button
-    type="button"
-    onClick={handleSignIn}
-    className="rounded-xl border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
-  >
-    Sign In & Continue
-  </button>
+  {accountMode === "signin" && (
+    <button
+      type="button"
+      onClick={handleSignIn}
+      className="rounded-xl border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
+    >
+      Sign In & Continue
+    </button>
+  )}
 
   <button
     type="button"
-    onClick={() => {
-      setShowAccountSetup(false);
-      setSelectedPlan(null);
-    }}
+onClick={() => {
+  setShowAccountSetup(false);
+  setSelectedPlan(null);
+  setAccountMode(null);
+}}
     className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-400 transition hover:text-white"
   >
     Cancel
@@ -1417,8 +1423,8 @@ function handlePrintSummary() {
 </div>
   </div>
 )}
-
-
+{!showAccountSetup && (
+  <>
     <div className="mt-6 grid gap-5 md:grid-cols-3">
 
       {/* Individual */}
@@ -1532,12 +1538,16 @@ function handlePrintSummary() {
           20 Properties Max Per Trial Batch
         </div>
       </div>
-     </div>
     </div>
+
+    </div>
+  </>
+)}
+
   </div>
 )}
 
-{!isPaid && (
+{!isPaid && !showAccountSetup && (
   <>
     <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-400">
       <div className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
