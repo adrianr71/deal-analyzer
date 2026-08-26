@@ -230,6 +230,34 @@ export default async function handler(req, res) {
       });
     }
 
+try {
+  const { error: authInviteError } =
+    await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+      redirectTo: "https://www.rentaldealscreener.pro/agents?team_invite=1",
+    });
+
+  if (authInviteError) {
+    const message = String(authInviteError.message || "").toLowerCase();
+
+    // Existing Supabase users do not need another auth invitation.
+    if (
+      !message.includes("already") &&
+      !message.includes("registered") &&
+      !message.includes("exists")
+    ) {
+      console.error(
+        "Supabase auth invitation failed:",
+        authInviteError
+      );
+    }
+  }
+} catch (authInviteException) {
+  console.error(
+    "Supabase auth invitation exception:",
+    authInviteException
+  );
+}
+
     const newUsedSeats = usedSeats + 1;
 
     return res.status(200).json({

@@ -111,6 +111,7 @@ export default function App() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [showAccountSetup, setShowAccountSetup] = useState(false);
   const [accountMode, setAccountMode] = useState(null);
+  const [isTeamInvite, setIsTeamInvite] = useState(false);
   const [subscriptionChecked, setSubscriptionChecked] = useState(false);
   
   const [teamData, setTeamData] = useState(null);
@@ -148,6 +149,17 @@ useEffect(() => {
   return () => {
     subscription.unsubscribe();
   };
+}, []);
+
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+
+  if (params.get("team_invite") === "1") {
+    setIsTeamInvite(true);
+    setAccountMode("invite");
+    setSelectedPlan(null);
+    setShowAccountSetup(true);
+  }
 }, []);
 
 function getOrCreateDeviceId() {
@@ -385,6 +397,74 @@ try {
 }
   if (selectedPlan) {
     await startStripeCheckout(selectedPlan);
+  }
+}
+
+async function handleTeamInviteSetup() {
+  if (!authPassword || authPassword.length < 6) {
+    alert("Password must be at least 6 characters.");
+    return;
+  }
+
+  try {
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    if (sessionError || !session?.user) {
+      alert(
+        "Your invitation session could not be verified. Please reopen the invitation link."
+      );
+      return;
+    }
+
+    const { error: passwordError } =
+      await supabase.auth.updateUser({
+        password: authPassword,
+      });
+
+    if (passwordError) {
+      alert(passwordError.message);
+      return;
+    }
+
+    const activationResponse = await fetch(
+      "/api/activate-team-membership",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      }
+    );
+
+    const activationData = await activationResponse.json();
+
+    if (!activationResponse.ok) {
+      alert(
+        activationData.error ||
+          "Unable to activate your team membership."
+      );
+      return;
+    }
+
+    setAuthPassword("");
+    setIsTeamInvite(false);
+    setAccountMode(null);
+    setShowAccountSetup(false);
+
+    window.history.replaceState({}, "", "/agents");
+    window.location.reload();
+  } catch (error) {
+    console.error(
+      "Team invitation setup failed:",
+      error
+    );
+
+    alert(
+      "Unable to complete your team account setup. Please try again."
+    );
   }
 }
 
@@ -1360,7 +1440,9 @@ function handlePrintSummary() {
 {showAccountSetup && (
   <div className="mb-5 rounded-2xl border border-cyan-400/30 bg-slate-950/60 p-5">
 <div className="text-lg font-semibold text-white">
-  {accountMode === "signin"
+  {accountMode === "invite"
+    ? "Set Up Your Team Account"
+    : accountMode === "signin"
     ? "Sign In"
     : selectedPlan === "team_5"
     ? "Create your Team 5 account"
@@ -1370,7 +1452,9 @@ function handlePrintSummary() {
 </div>
 
 <div className="mt-2 text-sm leading-6 text-slate-400">
-  {accountMode === "signin"
+  {accountMode === "invite"
+    ? "Create a password for your team account. Your access will be provided through your team's subscription."
+    : accountMode === "signin"
     ? "Enter your existing email and password. Team members should use the exact email address that received the invitation."
     : "Enter your email and create a password with at least 6 characters. After your account is created, you’ll continue securely to Stripe to complete your subscription."}
 </div>
@@ -1412,6 +1496,16 @@ function handlePrintSummary() {
       Sign In & Continue
     </button>
   )}
+
+{accountMode === "invite" && (
+  <button
+    type="button"
+    onClick={handleTeamInviteSetup}
+    className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-black transition hover:bg-cyan-400"
+  >
+    Set Password & Join Team
+  </button>
+)}
 
   <button
     type="button"
