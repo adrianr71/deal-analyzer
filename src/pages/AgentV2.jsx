@@ -350,6 +350,22 @@ if (!entitlementData.subscribed) {
   return;
 }
 
+localStorage.setItem("subscribed", "true");
+
+setIsSubscribed(true);
+setSubscriptionPlan(
+  entitlementData.plan || "individual"
+);
+setMaxUsers(
+  Number(entitlementData.maxUsers) || 1
+);
+setMaxDevicesPerUser(
+  Number(entitlementData.maxDevicesPerUser) || 2
+);
+setAccessRole(
+  entitlementData.accessRole || "owner"
+);
+
 try {
   await registerCurrentDevice(session.access_token);
 } catch (deviceError) {
