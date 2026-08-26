@@ -237,15 +237,21 @@ const { error: authInviteError } =
   });
 
 if (authInviteError) {
-  console.error(
-    "Supabase auth invitation failed:",
-    authInviteError
-  );
+  if (authInviteError.code === "email_exists") {
+    console.log(
+      "Supabase user already exists; team invite will use existing account."
+    );
+  } else {
+    console.error(
+      "Supabase auth invitation failed:",
+      authInviteError
+    );
 
-  return res.status(502).json({
-    error: "Supabase invitation failed",
-    details: authInviteError.message,
-  });
+    return res.status(502).json({
+      error: "Supabase invitation failed",
+      details: authInviteError.message,
+    });
+  }
 }
 
     const newUsedSeats = usedSeats + 1;
