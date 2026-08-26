@@ -1677,20 +1677,26 @@ onClick={() => {
       </div>
     </div>
 
-    <div className="mt-4 text-xs leading-6 text-slate-500">
-      By subscribing, you agree to our{" "}
-      <a href="/terms" className="text-cyan-400 hover:underline">
-        Terms of Use
-      </a>{" "}
-      and{" "}
-      <a href="/privacy" className="text-cyan-400 hover:underline">
-        Privacy Policy
-      </a>.
-      <br />
-      Subscriptions renew automatically each month until canceled.
-      Cancel anytime. Access remains active through the end of your
-      billing period.
-    </div>
+<div className="mt-4 text-xs leading-6 text-slate-500">
+  By subscribing, you agree to our{" "}
+  <a href="/terms" className="text-cyan-400 hover:underline">
+    Terms of Use
+  </a>{" "}
+  and{" "}
+  <a href="/privacy" className="text-cyan-400 hover:underline">
+    Privacy Policy
+  </a>.
+  <br />
+  Subscriptions renew automatically each month until canceled.
+  Upgrades may take effect immediately and may include prorated charges.
+  Downgrades take effect at the next renewal and may require the account
+  to be within the selected plan&apos;s user-seat limit.
+  Cancel anytime; access remains active through the end of the current
+  paid billing period.
+  Each named user may use the service on up to 2 personal devices.
+  Team members receive access through the team owner&apos;s active
+  subscription.
+</div>
   </>
 )}
            </div>

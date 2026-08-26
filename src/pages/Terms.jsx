@@ -7,7 +7,7 @@ export default function Terms() {
         </h1>
 
         <p className="mb-10 text-slate-400">
-          Last Updated: June 2026
+          Last Updated: August 2026
         </p>
 
         <div className="space-y-10 text-sm leading-8">
@@ -23,72 +23,98 @@ export default function Terms() {
             </p>
           </section>
 
-          <section>
-            <h2 className="mb-3 text-2xl font-semibold text-white">
-              Individual Professional Use
-            </h2>
-            <p>
-              Professional Agent subscriptions are licensed for use by a
-              single individual user unless otherwise authorized in writing.
-            </p>
+         <section>
+  <h2 className="mb-3 text-2xl font-semibold text-white">
+    Accounts, Team Plans, and Device Limits
+  </h2>
 
-            <p className="mt-3">
-              Account sharing across multiple unrelated users, brokerages,
-              teams, organizations, offices, or third parties is prohibited
-              without an authorized team or enterprise agreement.
-            </p>
+  <p>
+    Individual subscriptions are licensed to one named user. Team 5
+    subscriptions allow up to 5 named users, and Team 10 subscriptions
+    allow up to 10 named users.
+  </p>
 
-            <p className="mt-3">
-              Rental Deal Screener reserves the right to suspend, restrict,
-              or terminate accounts that exhibit excessive sharing,
-              unauthorized access, or activity inconsistent with individual
-              subscription usage.
-            </p>
-          </section>
+  <p className="mt-3">
+    Each named user may access Rental Deal Screener on up to 2 personal
+    devices. User accounts, passwords, team seats, and device allowances
+    may not be shared or used to circumvent subscription limits.
+  </p>
 
-          <section>
-            <h2 className="mb-3 text-2xl font-semibold text-white">
-              Subscription Billing
-            </h2>
+  <p className="mt-3">
+    Team subscription owners are responsible for managing team seats,
+    invitations, removals, and billing. Invited team members receive
+    access through the team owner's active subscription and do not need
+    to purchase a separate subscription.
+  </p>
 
-            <p>
-              Paid subscriptions renew automatically according to the selected
-              billing cycle until canceled.
-            </p>
+  <p className="mt-3">
+    Rental Deal Screener may suspend, restrict, or terminate access that
+    reasonably appears to involve unauthorized credential sharing,
+    excessive device sharing, misuse of team seats, or attempts to bypass
+    subscription limitations.
+  </p>
+</section>
 
-            <p className="mt-3">
-              You may cancel your subscription at any time through your
-              account settings or customer support.
-            </p>
+        <section>
+  <h2 className="mb-3 text-2xl font-semibold text-white">
+    Subscription Billing, Plan Changes, and Cancellation
+  </h2>
 
-            <p className="mt-3">
-              Cancellation prevents future billing but does not automatically
-              generate refunds for charges already incurred.
-            </p>
+  <p>
+    Paid subscriptions renew automatically each month until canceled.
+    Subscription fees are charged according to the plan selected at the
+    time of purchase.
+  </p>
 
-            <p className="mt-3">
-              Unless otherwise required by law, subscription fees are
-              non-refundable.
-            </p>
+  <p className="mt-3">
+    Upgrades to a higher-priced plan may take effect immediately and may
+    include prorated charges for the remainder of the current billing
+    period.
+  </p>
 
-            <p className="mt-3">
-              Access remains active through the end of the current paid
-              billing period.
-            </p>
-          </section>
+  <p className="mt-3">
+    Downgrades are scheduled to take effect at the next subscription
+    renewal. A downgrade to a plan with fewer user seats may require the
+    account to be within that plan&apos;s seat limit before the downgrade
+    can be scheduled.
+  </p>
 
-          <section>
-            <h2 className="mb-3 text-2xl font-semibold text-white">
-              Payment Processing
-            </h2>
+  <p className="mt-3">
+    You may cancel your subscription at any time through the available
+    subscription-management tools or by contacting support.
+  </p>
 
-            <p>
-              Payments are processed by third-party payment providers such as
-              Stripe. Rental Deal Screener does not store full payment card
-              numbers. Payment processing is subject to the payment provider's
-              terms and policies.
-            </p>
-          </section>
+  <p className="mt-3">
+    Cancellation prevents future renewal charges. Unless otherwise
+    required by law, subscription fees already paid are non-refundable,
+    and access remains active through the end of the current paid billing
+    period.
+  </p>
+</section>
+
+ <section>
+  <h2 className="mb-3 text-2xl font-semibold text-white">
+    Payment Processing
+  </h2>
+
+  <p>
+    Subscription payments are processed by Stripe or other third-party
+    payment providers made available through the platform. Rental Deal
+    Screener does not directly store full payment card numbers.
+  </p>
+
+  <p className="mt-3">
+    By starting a paid subscription, you authorize the applicable payment
+    provider to charge the payment method you provide for recurring
+    subscription fees, applicable prorated upgrade charges, and other
+    amounts properly due under your selected plan.
+  </p>
+
+  <p className="mt-3">
+    Payment processing is also subject to the applicable payment
+    provider&apos;s terms, privacy policy, and other policies.
+  </p>
+</section>
 
           <section>
             <h2 className="mb-3 text-2xl font-semibold text-white">

@@ -12,19 +12,27 @@ export default function Privacy() {
             us with privacy-related questions.
           </p>
 
-          <section>
-            <h2 className="mb-2 text-xl font-semibold text-white">
-              Information We Collect
-            </h2>
-            <p>
-              We may collect account information, subscription status,
-              customer identifiers, session activity, browser or device
-              information, uploaded CSV data, property listing data, and
-              platform usage analytics to operate the platform, improve
-              functionality, support security, prevent abuse, and provide the
-              requested analysis features.
-            </p>
-          </section>
+         <section>
+  <h2 className="mb-2 text-xl font-semibold text-white">
+    Information We Collect
+  </h2>
+  <p>
+    We may collect account information such as email address and account
+    identifiers, subscription and team-membership status, customer and
+    subscription identifiers, invitation information, session activity,
+    browser or device information, device identifiers used to enforce
+    account limits, uploaded CSV data, property listing data, and platform
+    usage information.
+  </p>
+
+  <p className="mt-3">
+    This information may be used to create and authenticate accounts,
+    provide subscription and team access, manage invitations, enforce user
+    and device limits, process requested analysis features, maintain
+    security, prevent abuse, troubleshoot issues, and improve platform
+    functionality.
+  </p>
+</section>
 
           <section>
             <h2 className="mb-2 text-xl font-semibold text-white">
@@ -92,6 +100,23 @@ export default function Privacy() {
             </p>
           </section>
 
+<section>
+  <h2 className="mb-2 text-xl font-semibold text-white">
+    Browser Storage and Device Identification
+  </h2>
+  <p>
+    The platform may use browser-based storage, session information, and
+    locally stored device identifiers to maintain authentication state,
+    remember account-related preferences, enforce device limits, and
+    support security and abuse-prevention features.
+  </p>
+
+  <p className="mt-3">
+    These identifiers are used to help recognize authorized devices and
+    are not intended to provide precise physical location tracking.
+  </p>
+</section>
+
           <section>
             <h2 className="mb-2 text-xl font-semibold text-white">
               Data Sharing
@@ -145,7 +170,7 @@ export default function Privacy() {
           </section>
 
           <p className="pt-6 text-slate-400">
-            Last updated: June 2026
+            Last updated: August 2026
           </p>
         </div>
       </div>

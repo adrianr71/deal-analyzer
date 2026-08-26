@@ -5,11 +5,11 @@ export default function Disclaimer() {
         <h1 className="mb-6 text-4xl font-bold text-white">Disclaimer</h1>
 
         <div className="space-y-6 text-sm leading-7">
-          <p>
-            Rental Deal Screener is intended solely for informational,
-            educational, preliminary investment screening, rental property
-            underwriting review, and real estate analysis purposes.
-          </p>
+<p>
+  Rental Deal Screener is intended solely for informational,
+  educational, preliminary investment screening, rental property
+  analysis, and decision-support purposes.
+</p>
 
           <section>
             <h2 className="mb-2 text-xl font-semibold text-white">
@@ -86,7 +86,7 @@ export default function Disclaimer() {
           </section>
 
           <p className="pt-6 text-slate-400">
-            Last updated: June 2026
+            Last updated: August 2026
           </p>
         </div>
       </div>
