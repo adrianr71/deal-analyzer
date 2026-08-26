@@ -230,7 +230,6 @@ export default async function handler(req, res) {
       });
     }
 
-try {
 const { error: authInviteError } =
   await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
     redirectTo:
