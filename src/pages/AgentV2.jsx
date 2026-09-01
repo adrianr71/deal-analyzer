@@ -139,12 +139,18 @@ useEffect(() => {
 
   loadAuthSession();
 
-  const {
-    data: { subscription },
-  } = supabase.auth.onAuthStateChange((_event, session) => {
-    setAuthUser(session?.user || null);
-    setAuthChecked(true);
-  });
+const {
+  data: { subscription },
+} = supabase.auth.onAuthStateChange((event, session) => {
+  setAuthUser(session?.user || null);
+  setAuthChecked(true);
+
+  if (event === "PASSWORD_RECOVERY") {
+    setAccountMode("reset");
+    setSelectedPlan(null);
+    setShowAccountSetup(true);
+  }
+});
 
   return () => {
     subscription.unsubscribe();
@@ -251,6 +257,53 @@ setAccountMode(null);
   if (selectedPlan) {
     await startStripeCheckout(selectedPlan);
   }
+}
+
+async function handleForgotPassword() {
+  const email = authEmail.trim();
+
+  if (!email) {
+    alert("Please enter your email address first.");
+    return;
+  }
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo:
+      "https://www.rentaldealscreener.pro/agents?reset_password=1",
+  });
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  alert(
+    "Password reset email sent. Check your inbox and follow the link to create a new password."
+  );
+}
+
+async function handleResetPassword() {
+  if (!authPassword || authPassword.length < 6) {
+    alert("Password must be at least 6 characters.");
+    return;
+  }
+
+  const { error } = await supabase.auth.updateUser({
+    password: authPassword,
+  });
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  setAuthPassword("");
+  setAccountMode("signin");
+  setShowAccountSetup(true);
+
+  window.history.replaceState({}, "", "/agents");
+
+  alert("Password updated successfully. You can now sign in.");
 }
 
 async function handleSignIn() {
@@ -1458,6 +1511,8 @@ function handlePrintSummary() {
 <div className="text-lg font-semibold text-white">
   {accountMode === "invite"
     ? "Set Up Your Team Account"
+    : accountMode === "reset"
+    ? "Set a New Password"
     : accountMode === "signin"
     ? "Sign In"
     : selectedPlan === "team_5"
@@ -1470,6 +1525,8 @@ function handlePrintSummary() {
 <div className="mt-2 text-sm leading-6 text-slate-400">
   {accountMode === "invite"
     ? "Create a password for your team account. Your access will be provided through your team's subscription."
+    : accountMode === "reset"
+    ? "Enter a new password with at least 6 characters, then save it to regain access to your account."
     : accountMode === "signin"
     ? "Enter your existing email and password. Team members should use the exact email address that received the invitation."
     : "Enter your email and create a password with at least 6 characters. After your account is created, you’ll continue securely to Stripe to complete your subscription."}
@@ -1483,14 +1540,24 @@ function handlePrintSummary() {
         className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-400"
       />
 
-      <input
-        type="password"
-        value={authPassword}
-        onChange={(event) => setAuthPassword(event.target.value)}
-        placeholder="Password — minimum 6 characters"
-        className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-400"
-      />
-    </div>
+<input
+  type="password"
+  value={authPassword}
+  onChange={(event) => setAuthPassword(event.target.value)}
+  placeholder="Password — minimum 6 characters"
+  className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-400"
+/>
+
+{accountMode === "signin" && (
+  <button
+    type="button"
+    onClick={handleForgotPassword}
+    className="text-left text-sm text-cyan-400 hover:underline"
+  >
+    Forgot password?
+  </button>
+)}
+</div>
 
 <div className="mt-4 flex flex-wrap gap-3">
   {accountMode === "signup" && selectedPlan && (
@@ -1512,6 +1579,16 @@ function handlePrintSummary() {
       Sign In & Continue
     </button>
   )}
+
+{accountMode === "reset" && (
+  <button
+    type="button"
+    onClick={handleResetPassword}
+    className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-black transition hover:bg-cyan-400"
+  >
+    Set New Password
+  </button>
+)}
 
 {accountMode === "invite" && (
   <button
