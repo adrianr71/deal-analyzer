@@ -1326,7 +1326,7 @@ function handlePrintSummary() {
   </div>
 
   <p className="mt-3 text-sm text-slate-400">
-    Bulk analyze rental properties in seconds using NOI,
+    Bulk analyze rental properties in minutes using NOI,
     Cap Rate, Cash Flow, DSCR, CoC Return, and lender-focused
     investment metrics commonly used by investors,
     mortgage professionals, and DSCR loan providers.
