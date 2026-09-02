@@ -1532,13 +1532,15 @@ function handlePrintSummary() {
     : "Enter your email and create a password with at least 6 characters. After your account is created, you’ll continue securely to Stripe to complete your subscription."}
 </div>
     <div className="mt-4 grid gap-3 sm:grid-cols-2">
-      <input
-        type="email"
-        value={authEmail}
-        onChange={(event) => setAuthEmail(event.target.value)}
-        placeholder="Email address"
-        className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-400"
-      />
+{accountMode !== "reset" && (
+  <input
+    type="email"
+    value={authEmail}
+    onChange={(event) => setAuthEmail(event.target.value)}
+    placeholder="Email address"
+    className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-400"
+  />
+)}
 
 <input
   type="password"
