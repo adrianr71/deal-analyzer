@@ -1503,7 +1503,7 @@ function handlePrintSummary() {
   </>
 )}
 
-{!isPaid && (
+{(!isPaid || accountMode === "reset") && (
   <div className="w-full">
 
 {showAccountSetup && (
