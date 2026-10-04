@@ -52,18 +52,35 @@ export default async function handler(req, res) {
       });
     }
 
-    const entitlement = await checkSubscriptionStatus({
-      userId: user.id,
-    });
+const internalAdminEmails = (process.env.INTERNAL_ADMIN_EMAILS || "")
+  .split(",")
+  .map((email) => email.trim().toLowerCase())
+  .filter(Boolean);
 
-    if (!entitlement?.subscribed) {
-      return res.status(403).json({
-        error: "Active subscription access is required.",
-      });
-    }
+const userEmail = (user.email || "").trim().toLowerCase();
 
-    const maxDevices =
-      Number(entitlement.maxDevicesPerUser) || 2;
+let entitlement;
+
+if (internalAdminEmails.includes(userEmail)) {
+  entitlement = {
+    subscribed: true,
+    maxDevicesPerUser: 2,
+    internalAdmin: true,
+  };
+} else {
+  entitlement = await checkSubscriptionStatus({
+    userId: user.id,
+  });
+}
+
+if (!entitlement?.subscribed) {
+  return res.status(403).json({
+    error: "Active subscription access is required.",
+  });
+}
+
+const maxDevices =
+  Number(entitlement.maxDevicesPerUser) || 2;
 
     const {
       data: existingDevice,
