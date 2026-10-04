@@ -2045,7 +2045,7 @@ onClick={() => {
   isPaid={isPaid}
 />
 
-        <div className="mt-6 mb-6 flex flex-wrap items-center gap-3 print:hidden"><button onClick={handleExportCSV} disabled={sortedAnalyzedRows.length === 0} className="rounded-xl border border-green-500/40 bg-green-500/10 px-4 py-2 text-sm text-green-300 transition hover:bg-green-500/20 disabled:cursor-not-allowed disabled:opacity-40">Download CSV Report</button><button onClick={handlePrintSummary} disabled={isPaid && sortedAnalyzedRows.length === 0} className="rounded-xl border border-slate-500/40 bg-slate-500/10 px-4 py-2 text-sm text-slate-200 transition hover:bg-slate-500/20 disabled:cursor-not-allowed disabled:opacity-40">{isPaid ? "Create Branded PDF Report" : "View Sample Branded PDF Report"}</button></div>
+        <div className="mt-3 mb-4 flex flex-wrap items-center gap-3 print:hidden"><button onClick={handleExportCSV} disabled={sortedAnalyzedRows.length === 0} className="rounded-xl border border-green-500/40 bg-green-500/10 px-4 py-2 text-sm text-green-300 transition hover:bg-green-500/20 disabled:cursor-not-allowed disabled:opacity-40">Download CSV Report</button><button onClick={handlePrintSummary} disabled={isPaid && sortedAnalyzedRows.length === 0} className="rounded-xl border border-slate-500/40 bg-slate-500/10 px-4 py-2 text-sm text-slate-200 transition hover:bg-slate-500/20 disabled:cursor-not-allowed disabled:opacity-40">{isPaid ? "Create Branded PDF Report" : "View Sample Branded PDF Report"}</button></div>
         <div className="print:hidden"><MathLogicNote /></div>
         <footer className="mt-12 border-t border-slate-800 pt-6 text-center text-xs text-slate-400"><div className="flex flex-wrap justify-center gap-4"><button onClick={() => setActiveLegalModal("contact")} className="transition hover:text-white">Contact</button><button onClick={() => setActiveLegalModal("support")} className="transition hover:text-white">Support</button><a href="/terms" className="transition hover:text-white">Terms</a><a href="/privacy" className="transition hover:text-white">Privacy</a><a href="/disclaimer" className="transition hover:text-white">Disclaimer</a></div><div className="mt-3">© 2026 RentalDealScreener.pro · Operated by Caribmare LLC</div></footer>
         {activeLegalModal && <LegalModal type={activeLegalModal} onClose={() => setActiveLegalModal(null)} />}
@@ -2219,7 +2219,7 @@ function BrandingPanel({ branding, onChange, isPaid }) {
   const update = (key, value) => onChange({ ...branding, [key]: value });
 
   return (
-    <div className="mb-6 rounded-2xl border border-slate-700 bg-slate-950/70 p-4">
+    <div className="mb-3 rounded-2xl border border-slate-700 bg-slate-950/70 p-4">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
           <div className="text-lg font-semibold">Report Branding</div>
