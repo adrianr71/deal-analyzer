@@ -1384,7 +1384,7 @@ function handlePrintSummary() {
           : "Renews monthly. Cancel anytime. Access remains active through the end of the billing period."}
       </div>
 
-      {accessRole !== "member" && (
+      {accessRole === "owner" && (
 <div className="mt-4 flex flex-wrap justify-center gap-3">
   <button
     type="button"
