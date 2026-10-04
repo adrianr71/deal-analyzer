@@ -95,35 +95,59 @@ export default async function handler(req, res) {
       });
     }
 
-    let userId = null;
+let userId = null;
+let userEmail = "";
 
-    const authHeader =
-      req.headers.authorization || "";
+const authHeader =
+  req.headers.authorization || "";
 
-    if (authHeader.startsWith("Bearer ")) {
-      const accessToken = authHeader
-        .slice(7)
-        .trim();
+if (authHeader.startsWith("Bearer ")) {
+  const accessToken = authHeader
+    .slice(7)
+    .trim();
 
-      const {
-        data: { user },
-        error: userError,
-      } = await supabaseAdmin.auth.getUser(
-        accessToken
-      );
+  const {
+    data: { user },
+    error: userError,
+  } = await supabaseAdmin.auth.getUser(
+    accessToken
+  );
 
-      if (!userError && user) {
-        userId = user.id;
-      }
+  if (!userError && user) {
+    userId = user.id;
+    userEmail = (user.email || "")
+      .trim()
+      .toLowerCase();
+  }
+}
+
+const internalAdminEmails = (
+  process.env.INTERNAL_ADMIN_EMAILS || ""
+)
+  .split(",")
+  .map((email) => email.trim().toLowerCase())
+  .filter(Boolean);
+
+const isInternalAdmin =
+  internalAdminEmails.includes(userEmail);
+
+const subscription = isInternalAdmin
+  ? {
+      subscribed: true,
+      plan: "individual",
+      maxUsers: 1,
+      maxDevicesPerUser: 2,
+      accessRole: "internal_admin",
+      internalAdmin: true,
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
     }
+  : await checkSubscriptionStatus({
+      userId,
+    });
 
-    const subscription =
-      await checkSubscriptionStatus({
-        userId,
-      });
-
-    const isSubscribed =
-      subscription.subscribed === true;
+const isSubscribed =
+  subscription.subscribed === true;
 
     const limit = isSubscribed
       ? PAID_BATCH_LIMIT
