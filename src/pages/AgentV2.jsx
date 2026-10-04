@@ -2028,7 +2028,7 @@ onClick={() => {
         <div className="print-summary">
   {/* <PrintSummary rows={sortedAnalyzedRows} assumptions={assumptions} /> */}
 </div>
-        <div id="results-print-report">
+        <div id="results-print-report" className="mb-3">
 <ResultsTable
   isProcessing={isProcessing}
   rows={sortedAnalyzedRows}
