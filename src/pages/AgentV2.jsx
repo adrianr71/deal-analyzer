@@ -943,6 +943,57 @@ useEffect(() => {
    noiMonthly: 0,
 }));
 
+const SAMPLE_BRANDED_REPORT_ROWS = [
+  {
+    rating: "Strong",
+    score: 87.4,
+    propertyType: "Duplex",
+    address: "245 Palm Grove Ave",
+    city: "Tampa",
+    price: 425000,
+    monthlyRent: 4200,
+    noiMonthly: 2450,
+    monthlyCashFlow: 815,
+    capRate: 6.9,
+    cashOnCash: 9.1,
+    dscr: 1.42,
+    expenseRatio: 31,
+    mls: "SAMPLE-1001",
+  },
+  {
+    rating: "Good",
+    score: 81.2,
+    propertyType: "Triplex",
+    address: "781 Lakeview Drive",
+    city: "Orlando",
+    price: 515000,
+    monthlyRent: 5400,
+    noiMonthly: 3010,
+    monthlyCashFlow: 940,
+    capRate: 7.0,
+    cashOnCash: 8.6,
+    dscr: 1.36,
+    expenseRatio: 34,
+    mls: "SAMPLE-1002",
+  },
+  {
+    rating: "Average",
+    score: 72.8,
+    propertyType: "Single Family",
+    address: "1327 Oak Ridge Lane",
+    city: "Jacksonville",
+    price: 289000,
+    monthlyRent: 2750,
+    noiMonthly: 1510,
+    monthlyCashFlow: 390,
+    capRate: 6.3,
+    cashOnCash: 6.8,
+    dscr: 1.18,
+    expenseRatio: 39,
+    mls: "SAMPLE-1003",
+  },
+];
+
 function handleAssumptionsChange(nextAssumptions) {
   setAssumptions(nextAssumptions);
 
@@ -1222,8 +1273,29 @@ const response = await fetch("/api/analyze-batch", {
   }
 
 function handlePrintSummary() {
+  if (!isPaid) {
+    const sampleBranding = {
+      agentName: "Sample Agent",
+      company: "Sample Realty Group",
+      phone: "(555) 123-4567",
+      email: "sample@example.com",
+    };
+
+    printResultsReport(
+      SAMPLE_BRANDED_REPORT_ROWS,
+      assumptions,
+      sampleBranding
+    );
+
+    return;
+  }
+
   logCalculateEvent(rows);
-  printResultsReport(sortedAnalyzedRows, assumptions, reportBranding);
+  printResultsReport(
+    sortedAnalyzedRows,
+    assumptions,
+    reportBranding
+  );
 }
 
   function handleImportCSV(event) {
@@ -1950,7 +2022,11 @@ onClick={() => {
         </div>
 
         <AssumptionsPanel assumptions={assumptions} setAssumptions={handleAssumptionsChange} />
-        {isPaid && <BrandingPanel branding={reportBranding} onChange={handleReportBrandingChange} />}
+        <BrandingPanel
+  branding={reportBranding}
+  onChange={handleReportBrandingChange}
+  isPaid={isPaid}
+/>
         <div className="mb-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3 text-sm text-blue-200 print:hidden"><strong>Next Step:</strong> Fill out Global Assumptions as needed, then press <strong>Analyze All Properties</strong> to process your imported properties.</div>
         <div className="mb-6 flex flex-wrap items-center gap-3 print:hidden"><button onClick={runFreeTrialBatch} disabled={isProcessing || batchAnalyzed} className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition ${isProcessing || batchAnalyzed ? "cursor-not-allowed border border-slate-700 bg-slate-800 text-slate-500" : "border border-white/70 bg-white text-slate-950 hover:bg-cyan-100"}`}>{isProcessing ? "Analyzing Batch..." : batchAnalyzed ? "Batch Already Analyzed" : isPaid ? "Analyze All Properties" : `Click Here to Analyze All Properties • ${remainingTrials} Free Batches Remaining`}</button><div className="text-sm font-medium text-slate-300">Sort Results By:</div><select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white"><option value="score">Highest Score</option><option value="cashFlow">Highest Cash Flow</option><option value="price">Lowest Price</option></select></div>
 
@@ -1967,7 +2043,7 @@ onClick={() => {
   setTaxOverrides={setTaxOverrides}
 />
 </div>
-        <div className="mt-6 mb-6 flex flex-wrap items-center gap-3 print:hidden"><button onClick={handleExportCSV} disabled={sortedAnalyzedRows.length === 0} className="rounded-xl border border-green-500/40 bg-green-500/10 px-4 py-2 text-sm text-green-300 transition hover:bg-green-500/20 disabled:cursor-not-allowed disabled:opacity-40">Download CSV Report</button><button onClick={handlePrintSummary} disabled={sortedAnalyzedRows.length === 0} className="rounded-xl border border-slate-500/40 bg-slate-500/10 px-4 py-2 text-sm text-slate-200 transition hover:bg-slate-500/20 disabled:cursor-not-allowed disabled:opacity-40">Create Branded PDF Report</button></div>
+        <div className="mt-6 mb-6 flex flex-wrap items-center gap-3 print:hidden"><button onClick={handleExportCSV} disabled={sortedAnalyzedRows.length === 0} className="rounded-xl border border-green-500/40 bg-green-500/10 px-4 py-2 text-sm text-green-300 transition hover:bg-green-500/20 disabled:cursor-not-allowed disabled:opacity-40">Download CSV Report</button><button onClick={handlePrintSummary} disabled={isPaid && sortedAnalyzedRows.length === 0} className="rounded-xl border border-slate-500/40 bg-slate-500/10 px-4 py-2 text-sm text-slate-200 transition hover:bg-slate-500/20 disabled:cursor-not-allowed disabled:opacity-40">{isPaid ? "Create Branded PDF Report" : "View Sample Branded PDF Report"}</button></div>
         <div className="print:hidden"><MathLogicNote /></div>
         <footer className="mt-12 border-t border-slate-800 pt-6 text-center text-xs text-slate-400"><div className="flex flex-wrap justify-center gap-4"><button onClick={() => setActiveLegalModal("contact")} className="transition hover:text-white">Contact</button><button onClick={() => setActiveLegalModal("support")} className="transition hover:text-white">Support</button><a href="/terms" className="transition hover:text-white">Terms</a><a href="/privacy" className="transition hover:text-white">Privacy</a><a href="/disclaimer" className="transition hover:text-white">Disclaimer</a></div><div className="mt-3">© 2026 RentalDealScreener.pro · Operated by Caribmare LLC</div></footer>
         {activeLegalModal && <LegalModal type={activeLegalModal} onClose={() => setActiveLegalModal(null)} />}
@@ -2133,7 +2209,7 @@ function DecisionBadge({ label, tone }) { const styles = { green: "border border
 function MetricBox({ value, status, compact = false }) { const styles = { good: "border border-green-500/30 bg-green-500/10 text-green-400", avg: "border border-yellow-500/30 bg-yellow-500/10 text-yellow-400", bad: "border border-red-500/30 bg-red-500/10 text-red-400" }; const labels = { good: "Good", avg: "Average", bad: "Poor" }; return <div className={`rounded-xl text-center font-semibold ${styles[status] || styles.bad} ${compact ? "px-2 py-2 text-xs" : "px-3 py-2 text-xs"}`}><div>{value}</div><div className="text-[10px] opacity-80">{labels[status] || "Poor"}</div></div>; }
 function metricStatus(value, type) { if (type === "cap") return value >= 7 ? "good" : value >= 5 ? "avg" : "bad"; if (type === "coc") return value >= 8 ? "good" : value >= 4 ? "avg" : "bad"; if (type === "dscr") return value >= 1.2 ? "good" : value >= 1 ? "avg" : "bad"; if (type === "expense") return value < 35 ? "good" : value <= 45 ? "avg" : "bad"; return "bad"; }
 
-function BrandingPanel({ branding, onChange }) {
+function BrandingPanel({ branding, onChange, isPaid }) {
   const hasBranding = Boolean(
     branding.agentName || branding.company || branding.phone || branding.email
   );
@@ -2145,22 +2221,28 @@ function BrandingPanel({ branding, onChange }) {
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
           <div className="text-lg font-semibold">Report Branding</div>
-          {hasBranding && (
-            <div className="mt-1 text-xs text-slate-400">
-              Saved for future branded reports on this device.
-            </div>
-          )}
+ <div className="mt-1 text-xs text-slate-400">
+  {isPaid
+    ? "Saved for future branded reports on this device."
+    : "Sample preview. Upgrade to customize branding and create branded reports from your own properties."}
+</div>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowBrandingPanel((prev) => !prev)}
-          className="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs text-slate-300 transition hover:bg-slate-800 hover:text-white"
-        >
-          {showBrandingPanel ? "Hide Branding" : "Edit Branding"}
-        </button>
+{isPaid ? (
+  <button
+    type="button"
+    onClick={() => setShowBrandingPanel((prev) => !prev)}
+    className="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs text-slate-300 transition hover:bg-slate-800 hover:text-white"
+  >
+    {showBrandingPanel ? "Hide Branding" : "Edit Branding"}
+  </button>
+) : (
+  <div className="rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-200">
+    Paid Feature
+  </div>
+)}
       </div>
 
-      {showBrandingPanel && (
+      {showBrandingPanel && isPaid && (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <BrandingInput label="Agent Name" value={branding.agentName} onChange={(v) => update("agentName", v)} />
           <BrandingInput label="Company / Brokerage" value={branding.company} onChange={(v) => update("company", v)} />
