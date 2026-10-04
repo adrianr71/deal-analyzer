@@ -52,11 +52,29 @@ export default async function handler(req, res) {
       });
     }
 
-    const result = await checkSubscriptionStatus({
-      userId: user.id,
-    });
+const internalAdminEmails = (process.env.INTERNAL_ADMIN_EMAILS || "")
+  .split(",")
+  .map((email) => email.trim().toLowerCase())
+  .filter(Boolean);
 
-    return res.status(200).json(result);
+const userEmail = (user.email || "").trim().toLowerCase();
+
+if (internalAdminEmails.includes(userEmail)) {
+  return res.status(200).json({
+    subscribed: true,
+    plan: "individual",
+    maxUsers: 1,
+    maxDevicesPerUser: 2,
+    accessRole: "internal_admin",
+    internalAdmin: true,
+  });
+}
+
+const result = await checkSubscriptionStatus({
+  userId: user.id,
+});
+
+return res.status(200).json(result);
   } catch (error) {
     console.error(
       "Subscription status lookup failed:",
