@@ -1368,9 +1368,9 @@ function handlePrintSummary() {
         Rental Deal Screener Pro
       </h1>
 
-      <p className="mt-1 text-lg font-medium text-cyan-300">
-        For Real Estate Agents
-      </p>
+<p className="mt-1 text-lg font-medium text-cyan-300">
+  Multi-Property Rental Investment Analysis for Real Estate Agents
+</p>
     </div>
 
     <div className="shrink-0">
@@ -1397,12 +1397,18 @@ function handlePrintSummary() {
     </div>
   </div>
 
-  <p className="mt-3 text-sm text-slate-400">
-    Bulk analyze rental properties in minutes using NOI,
-    Cap Rate, Cash Flow, DSCR, CoC Return, and lender-focused
-    investment metrics commonly used by investors,
-    mortgage professionals, and DSCR loan providers.
-  </p>          
+<div className="mt-3">
+  <div className="text-xl font-semibold text-white md:text-2xl">
+    Turn a property list into a ranked investment shortlist in minutes.
+  </div>
+
+  <p className="mt-2 max-w-4xl text-sm leading-7 text-slate-400 md:text-base">
+    Analyze and compare up to 100 rental properties at once using your
+    client&apos;s financing, rent, expense, and return assumptions — then
+    quickly identify the strongest opportunities based on cash flow, NOI,
+    cap rate, CoC return, DSCR, and more.
+  </p>
+</div>       
 
 <div className="mt-5 overflow-hidden rounded-3xl border border-blue-500/40 bg-gradient-to-r from-blue-950/80 via-slate-900 to-cyan-950/70 p-6 shadow-2xl shadow-blue-950/30">
               <div className={`flex flex-col gap-6 ${isPaid ? "items-center text-center" : ""}`}>
