@@ -1,18 +1,36 @@
 import { Link } from "react-router-dom";
+import { useRef } from "react";
 
 export default function Tutorial() {
+  const videoRef = useRef(null);
+
+  const openFullscreen = async () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    try {
+      if (video.requestFullscreen) {
+        await video.requestFullscreen();
+      } else if (video.webkitEnterFullscreen) {
+        video.webkitEnterFullscreen();
+      }
+    } catch (error) {
+      console.error("Fullscreen request failed:", error);
+    }
+  };
+
   return (
     <main
       style={{
         minHeight: "100vh",
         background: "#07101f",
         color: "#ffffff",
-        padding: "40px 24px 60px",
+        padding: "28px 20px 50px",
       }}
     >
       <div
         style={{
-          maxWidth: "1200px",
+          maxWidth: "1400px",
           margin: "0 auto",
         }}
       >
@@ -29,8 +47,8 @@ export default function Tutorial() {
 
         <header
           style={{
-            marginTop: "32px",
-            marginBottom: "28px",
+            marginTop: "24px",
+            marginBottom: "22px",
           }}
         >
           <h1
@@ -46,7 +64,7 @@ export default function Tutorial() {
             style={{
               color: "#22d3ee",
               fontSize: "20px",
-              marginBottom: "16px",
+              marginBottom: "14px",
             }}
           >
             Multi-Property Rental Investment Analysis for Real Estate Agents
@@ -56,26 +74,61 @@ export default function Tutorial() {
             style={{
               color: "#b7c8df",
               fontSize: "17px",
-              lineHeight: "1.7",
-              maxWidth: "900px",
+              lineHeight: "1.6",
+              maxWidth: "950px",
+              marginBottom: "8px",
             }}
           >
             See how to import a property list, apply your investor&apos;s
             assumptions, compare multiple rental opportunities, refine
             individual properties, and create professional reports.
           </p>
+
+          <p
+            style={{
+              color: "#d7e3f4",
+              fontSize: "15px",
+              marginTop: "10px",
+            }}
+          >
+            For the clearest view of the property analysis and reports, watch in
+            full screen.
+          </p>
         </header>
 
         <div
           style={{
+            marginBottom: "14px",
+          }}
+        >
+          <button
+            onClick={openFullscreen}
+            style={{
+              background: "#0891b2",
+              color: "#ffffff",
+              border: "none",
+              padding: "12px 20px",
+              borderRadius: "10px",
+              fontWeight: "600",
+              fontSize: "15px",
+              cursor: "pointer",
+            }}
+          >
+            WATCH FULL SCREEN
+          </button>
+        </div>
+
+        <div
+          style={{
             background: "#0b1528",
-            border: "1px solid #24364f",
+            border: "1px solid #2b4668",
             borderRadius: "18px",
-            padding: "16px",
-            boxShadow: "0 20px 50px rgba(0,0,0,0.25)",
+            padding: "12px",
+            boxShadow: "0 20px 50px rgba(0,0,0,0.28)",
           }}
         >
           <video
+            ref={videoRef}
             controls
             playsInline
             preload="metadata"
@@ -97,7 +150,7 @@ export default function Tutorial() {
         <div
           style={{
             textAlign: "center",
-            marginTop: "34px",
+            marginTop: "28px",
           }}
         >
           <Link
