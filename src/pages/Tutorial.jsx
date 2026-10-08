@@ -1,12 +1,116 @@
 import { Link } from "react-router-dom";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
+import { supabase } from "../supabaseClient";
+
+function getOrCreateId(storage, key) {
+  let id = storage.getItem(key);
+
+  if (!id) {
+    id = crypto.randomUUID();
+    storage.setItem(key, id);
+  }
+
+  return id;
+}
 
 export default function Tutorial() {
   const videoRef = useRef(null);
 
+  const visitorIdRef = useRef(null);
+  const sessionIdRef = useRef(null);
+
+  const startedRef = useRef(false);
+  const fiftyRef = useRef(false);
+  const ninetyRef = useRef(false);
+  const completedRef = useRef(false);
+
+  const trackEvent = async (eventName, metadata = {}) => {
+    try {
+      if (!visitorIdRef.current || !sessionIdRef.current) return;
+
+      const { error } = await supabase
+        .from("tutorial_analytics")
+        .insert({
+          event_name: eventName,
+          visitor_id: visitorIdRef.current,
+          session_id: sessionIdRef.current,
+          page_path: "/tutorial",
+          metadata,
+        });
+
+      if (error) {
+        console.warn("Tutorial analytics event not recorded:", error.message);
+      }
+    } catch (error) {
+      console.warn("Tutorial analytics unavailable:", error);
+    }
+  };
+
+useEffect(() => {
+  try {
+    visitorIdRef.current = getOrCreateId(
+      localStorage,
+      "rds_tutorial_visitor_id"
+    );
+
+    sessionIdRef.current = getOrCreateId(
+      sessionStorage,
+      "rds_tutorial_session_id"
+    );
+
+    if (!pageViewTrackedRef.current) {
+      pageViewTrackedRef.current = true;
+      trackEvent("page_view");
+    }
+  } catch (error) {
+    console.warn("Tutorial visitor tracking unavailable:", error);
+  }
+}, []);
+
+  const handlePlay = () => {
+    if (startedRef.current) return;
+
+    startedRef.current = true;
+    trackEvent("video_started");
+  };
+
+  const handleTimeUpdate = () => {
+    const video = videoRef.current;
+
+    if (!video || !video.duration) return;
+
+    const progress = video.currentTime / video.duration;
+
+    if (progress >= 0.5 && !fiftyRef.current) {
+      fiftyRef.current = true;
+
+      trackEvent("video_50_percent", {
+        current_time: Math.round(video.currentTime),
+      });
+    }
+
+    if (progress >= 0.9 && !ninetyRef.current) {
+      ninetyRef.current = true;
+
+      trackEvent("video_90_percent", {
+        current_time: Math.round(video.currentTime),
+      });
+    }
+  };
+
+  const handleEnded = () => {
+    if (completedRef.current) return;
+
+    completedRef.current = true;
+    trackEvent("video_completed");
+  };
+
   const openFullscreen = async () => {
     const video = videoRef.current;
+
     if (!video) return;
+
+    trackEvent("fullscreen_clicked");
 
     try {
       if (video.requestFullscreen) {
@@ -114,7 +218,7 @@ export default function Tutorial() {
               cursor: "pointer",
             }}
           >
-            WATCH FULL SCREEN
+            Watch Full Screen
           </button>
         </div>
 
@@ -132,6 +236,9 @@ export default function Tutorial() {
             controls
             playsInline
             preload="metadata"
+            onPlay={handlePlay}
+            onTimeUpdate={handleTimeUpdate}
+            onEnded={handleEnded}
             style={{
               display: "block",
               width: "100%",
