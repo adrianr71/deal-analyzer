@@ -24,47 +24,88 @@ export default function Tutorial() {
   const ninetyRef = useRef(false);
   const completedRef = useRef(false);
 
-  const trackEvent = async (eventName, metadata = {}) => {
+const trackEvent = async (eventName, metadata = {}) => {
+  try {
+    if (!visitorIdRef.current || !sessionIdRef.current) return false;
+
+    const { error } = await supabase
+      .from("tutorial_analytics")
+      .insert({
+        event_name: eventName,
+        visitor_id: visitorIdRef.current,
+        session_id: sessionIdRef.current,
+        page_path: "/tutorial",
+        metadata,
+      });
+
+    if (error) {
+      console.warn(
+        "Tutorial analytics event not recorded:",
+        error.message
+      );
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.warn("Tutorial analytics unavailable:", error);
+    return false;
+  }
+};
+
+useEffect(() => {
+  const recordPageView = async () => {
     try {
-      if (!visitorIdRef.current || !sessionIdRef.current) return;
+      visitorIdRef.current = getOrCreateId(
+        localStorage,
+        "rds_tutorial_visitor_id"
+      );
 
-      const { error } = await supabase
-        .from("tutorial_analytics")
-        .insert({
-          event_name: eventName,
-          visitor_id: visitorIdRef.current,
-          session_id: sessionIdRef.current,
-          page_path: "/tutorial",
-          metadata,
-        });
+      sessionIdRef.current = getOrCreateId(
+        sessionStorage,
+        "rds_tutorial_session_id"
+      );
 
-      if (error) {
-        console.warn("Tutorial analytics event not recorded:", error.message);
+      const recorded =
+        sessionStorage.getItem("rds_tutorial_page_view_recorded");
+
+      const pending =
+        sessionStorage.getItem("rds_tutorial_page_view_pending");
+
+      if (recorded || pending) return;
+
+      // Prevent React development mode from starting the same insert twice.
+      sessionStorage.setItem(
+        "rds_tutorial_page_view_pending",
+        "true"
+      );
+
+      const success = await trackEvent("page_view");
+
+      sessionStorage.removeItem(
+        "rds_tutorial_page_view_pending"
+      );
+
+      // Only mark it recorded after Supabase confirms the insert.
+      if (success) {
+        sessionStorage.setItem(
+          "rds_tutorial_page_view_recorded",
+          "true"
+        );
       }
     } catch (error) {
-      console.warn("Tutorial analytics unavailable:", error);
+      sessionStorage.removeItem(
+        "rds_tutorial_page_view_pending"
+      );
+
+      console.warn(
+        "Tutorial visitor tracking unavailable:",
+        error
+      );
     }
   };
 
-useEffect(() => {
-  try {
-    visitorIdRef.current = getOrCreateId(
-      localStorage,
-      "rds_tutorial_visitor_id"
-    );
-
-    sessionIdRef.current = getOrCreateId(
-      sessionStorage,
-      "rds_tutorial_session_id"
-    );
-
-    if (!pageViewTrackedRef.current) {
-      pageViewTrackedRef.current = true;
-      trackEvent("page_view");
-    }
-  } catch (error) {
-    console.warn("Tutorial visitor tracking unavailable:", error);
-  }
+  recordPageView();
 }, []);
 
   const handlePlay = () => {
